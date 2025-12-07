@@ -13,6 +13,7 @@ import AuthProvider from "./context/AuthProvider.jsx";
 import AllTicket from "./components/AllTicket/AllTicket.jsx";
 import DashBoard from "./components/DashBoard/DashBoard.js";
 import PrivateRoute from "./Routs/PrivateRoute.jsx";
+import AddTicket from "./components/DashBoard/Vendor/AddTicket.jsx";
 
 const router = createBrowserRouter([
   {
@@ -38,6 +39,10 @@ const router = createBrowserRouter([
       {
         path: "/dashboard",
        element:<PrivateRoute><DashBoard></DashBoard></PrivateRoute>
+      },
+      {
+        path:"/addTicket",
+        element:<AddTicket></AddTicket>
       },
 
       {
