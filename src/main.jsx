@@ -1,11 +1,10 @@
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import "./index.css";
-import { createBrowserRouter } from "react-router";
-import { RouterProvider } from "react-router/dom";
+import { createBrowserRouter, RouterProvider } from "react-router";
+
 import RootLayout from "./layout/RootLayout.jsx";
 import Home from "./components/Home/Home.jsx";
-// import AuthProvider from './context/AuthProvider.jsx';
 import Register from "./components/Register/Register.jsx";
 import Login from "./components/Login/Login.jsx";
 import ErrorPage from "./components/ErrorPage/ErrorPage.jsx";
@@ -18,37 +17,25 @@ import AddTicket from "./components/DashBoard/Vendor/AddTicket.jsx";
 const router = createBrowserRouter([
   {
     path: "/",
-    Component: RootLayout,
+    element: <RootLayout />,
     children: [
-      {
-        index: true,
-        Component: Home,
-      },
-      {
-        path: "/Register",
-        Component: Register,
-      },
-      {
-        path: "/Login",
-        Component: Login,
-      },
+      { index: true, element: <Home /> },
+      { path: "/register", element: <Register /> },
+      { path: "/login", element: <Login /> },
       {
         path: "/all-ticket",
-        element:<PrivateRoute><AllTicket></AllTicket></PrivateRoute>
+        element: <PrivateRoute><AllTicket /></PrivateRoute>,
       },
       {
         path: "/dashboard",
-       element:<PrivateRoute><DashBoard></DashBoard></PrivateRoute>
+        element: <PrivateRoute><DashBoard /></PrivateRoute>,
       },
       {
-        path:"/addTicket",
-        element:<AddTicket></AddTicket>
+        path: "/addTicket",
+        element: <PrivateRoute><AddTicket /></PrivateRoute>,
       },
-
-      {
-        path: "/*",
-        Component: ErrorPage,
-      },
+      { path: "*", 
+        element: <ErrorPage /> },
     ],
   },
 ]);

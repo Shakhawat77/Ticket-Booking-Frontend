@@ -1,125 +1,118 @@
-
-import { NavLink, useNavigate  } from "react-router";
-import "react-toastify/dist/ReactToastify.css";
-import { useAuth } from "../../context/AuthProvider";
+import React, { useState } from "react";
+import { NavLink, useNavigate } from "react-router";
+import { useAuth } from "../../context/AuthProvider.jsx";
+import { FaBus, FaBars, FaTimes } from "react-icons/fa";
+import ThemeToggle from "../ThemeToggole/ThemeToggole.jsx";
 
 const Navbar = () => {
   const { user, logOut } = useAuth();
-  console.log(user);
   const navigate = useNavigate();
+  const [menuOpen, setMenuOpen] = useState(false);
 
   const handleLogout = async () => {
     try {
       await logOut();
-      toast.success("Logged out successfully!");
       navigate("/login");
     } catch (err) {
       console.error(err);
-      toast.error("Failed to logout");
     }
   };
 
   const links = (
     <>
-      <li><NavLink to="/">Home</NavLink> </li>
-      <li><NavLink to="/all-ticket"> All Tickets</NavLink> </li>
-      <li><NavLink to="/dashboard">DashBoard</NavLink> </li>
+      <li>
+        <NavLink to="/">Home</NavLink>
+      </li>
+      {user && (
+        <>
+          <li>
+            <NavLink to="/all-ticket">All Tickets</NavLink>
+          </li>
+          <li>
+            <NavLink to="/dashboard">Dashboard</NavLink>
+          </li>
+        </>
+      )}
     </>
   );
 
   return (
-    <>
-     
-      <div>
-        <div
-          className="navbar shadow-sm px-4 relative"
-         
-        >
-          <div className="navbar-start">
-            <div className="dropdown">
-              <div tabIndex={0} role="button" className="btn btn-ghost lg:hidden">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  className="h-5 w-5"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth="2"
-                    d="M4 6h16M4 12h8m-8 6h16"
-                  />
-                </svg>
-              </div>
-              <ul
-                tabIndex="-1"
-                className="menu menu-sm dropdown-content bg-base-100 rounded-box mt-3 w-52 p-2 shadow"
-              >
-                {links}
-              </ul>
-            </div>
-            <NavLink to="/" className="font-bold text-xl text-blue-900 animate-pulse">
-               Ticketk Booking Platfrom 
-            </NavLink>
-          </div>
+    <div className="navbar shadow-md px-4 py-2 flex items-center justify-between bg-gradient-to-r from-[#89A8B2] to-[#266352] text-white relative">
+      {/* Left: Logo */}
+      <div className="flex items-center gap-2">
+        <FaBus size={24} />
+        <NavLink to="/" className="font-bold text-xl">
+          TicketBari
+        </NavLink>
+      </div>
 
-          <div className="navbar-center hidden lg:flex">
-            <ul className="menu menu-horizontal px-1">{links}</ul>
-          </div>
+      {/* Center: Menu (desktop) */}
+      <ul className="hidden lg:flex gap-6">{links}</ul>
 
-          <div className="navbar-end gap-2 items-center">
-            {user ? (
-              <>
-                {user.photoURL ? (
-                  <div
-                    className="tooltip tooltip-bottom"
-                    data-tip={user.displayName || user.email}
-                  >
-                    <img
-                      src={user.photoURL}
-                      alt="User"
-                      className="w-10 h-10 rounded-full border border-gray-300"
-                    />
-                  </div>
-                ) : (
-                  <div
-                    className="tooltip tooltip-bottom w-10 h-10 rounded-full bg-gray-400 flex items-center justify-center text-white"
-                    data-tip={user.displayName || user.email}
-                  >
-                    {user.email[0].toUpperCase()}
-                  </div>
-                )}
+      {/* Right: User / Theme Toggle / Mobile */}
+      <div className="flex items-center gap-4">
+        <ThemeToggle />
 
-                <button
-                  className="btn btn-sm btn-primary animate-gradient"
-                  onClick={handleLogout}
-                >
-                  Logout
-                </button>
-              </>
+        {user ? (
+          <div className="flex items-center gap-2">
+            {user.photoURL ? (
+              <img
+                src={user.photoURL}
+                alt="User"
+                className="w-10 h-10 rounded-full border border-gray-300"
+              />
             ) : (
-              <div className="flex gap-2">
-                {
-                  user ?  <button
-                  className="btn btn-sm btn-primary animate-gradient"
-                  onClick={handleLogout}
-                >
-                  Logout
-                </button>:<NavLink to="/login" className="btn btn-sm btn-outline animate-gradient">
-                  Login
-                </NavLink>
-                }
-               
-                
-               
+              <div className="w-10 h-10 rounded-full bg-gray-400 flex items-center justify-center text-white">
+                {user.email[0].toUpperCase()}
               </div>
             )}
+
+            <span className="font-semibold">{user.displayName || user.email}</span>
+            <button
+              onClick={handleLogout}
+              className="bg-red-500 hover:bg-red-600 px-3 py-1 rounded"
+            >
+              Logout
+            </button>
           </div>
+        ) : (
+          <div className="hidden lg:flex gap-2">
+            <NavLink
+              to="/login"
+              className="px-3 py-1 border border-white rounded hover:bg-white hover:text-black transition"
+            >
+              Login
+            </NavLink>
+            <NavLink
+              to="/register"
+              className="px-3 py-1 bg-blue-600 rounded hover:bg-blue-700 transition"
+            >
+              Register
+            </NavLink>
+          </div>
+        )}
+
+        {/* Mobile Hamburger */}
+        <div className="lg:hidden">
+          <button onClick={() => setMenuOpen(!menuOpen)}>
+            {menuOpen ? <FaTimes size={24} /> : <FaBars size={24} />}
+          </button>
         </div>
       </div>
-    </>
+
+      {/* Mobile Menu */}
+      {menuOpen && (
+        <ul className="absolute top-full left-0 w-full bg-gray-700 text-white flex flex-col gap-4 p-4 lg:hidden">
+          {links}
+          {!user && (
+            <>
+              <NavLink to="/login">Login</NavLink>
+              <NavLink to="/register">Register</NavLink>
+            </>
+          )}
+        </ul>
+      )}
+    </div>
   );
 };
 

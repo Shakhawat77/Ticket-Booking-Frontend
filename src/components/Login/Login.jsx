@@ -1,18 +1,21 @@
 import { useState } from "react";
 import { useNavigate, Link, useLocation } from "react-router";
-import { GoogleAuthProvider, signInWithPopup } from "firebase/auth";
+import { GoogleAuthProvider, signInWithPopup, sendPasswordResetEmail } from "firebase/auth";
 import { auth } from "../../firebase/firebase.init";
 import toast, { Toaster } from "react-hot-toast";
 import { useAuth } from "../../context/AuthProvider";
 
 const Login = () => {
-  const {signInUser}=useAuth()
+  const { signInUser } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
+  const [showReset, setShowReset] = useState(false);
+  const [resetEmail, setResetEmail] = useState("");
+
   const from = location.state?.from?.pathname || "/";
 
   const handleLogin = async (e) => {
@@ -21,7 +24,7 @@ const Login = () => {
     try {
       await signInUser(email, password);
       toast.success("Login successful!");
-     navigate(from, { replace: true });
+      navigate(from, { replace: true });
     } catch (error) {
       console.error(error);
       toast.error(error.message);
@@ -36,6 +39,23 @@ const Login = () => {
       await signInWithPopup(auth, provider);
       toast.success("Google login successful!");
       navigate(from, { replace: true });
+    } catch (error) {
+      console.error(error);
+      toast.error(error.message);
+    }
+  };
+
+  const handleResetPassword = async (e) => {
+    e.preventDefault();
+    if (!resetEmail) {
+      return toast.error("Please enter your email!");
+    }
+
+    try {
+      await sendPasswordResetEmail(auth, resetEmail);
+      toast.success("Password reset email sent!");
+      setShowReset(false);
+      setResetEmail("");
     } catch (error) {
       console.error(error);
       toast.error(error.message);
@@ -74,7 +94,10 @@ const Login = () => {
               />
 
               <div className="text-right">
-                <span className="text-sm text-blue-600 cursor-pointer">
+                <span
+                  className="text-sm text-blue-800 cursor-pointer underline"
+                  onClick={() => setShowReset(true)}
+                >
                   Forgot password?
                 </span>
               </div>
@@ -106,6 +129,34 @@ const Login = () => {
           </div>
         </div>
       </div>
+      {showReset && (
+        <div className="fixed inset-0 bg-black/50 flex justify-center items-center">
+          <div className="bg-white p-6 rounded-lg w-80 shadow-lg">
+            <h2 className="text-xl font-semibold mb-3">Reset Password</h2>
+
+            <form onSubmit={handleResetPassword}>
+              <input
+                type="email"
+                placeholder="Enter your email"
+                value={resetEmail}
+                onChange={(e) => setResetEmail(e.target.value)}
+                className="input input-bordered w-full mb-3"
+              />
+
+              <button className="btn btn-primary w-full mb-2" type="submit">
+                Send Reset Email
+              </button>
+
+              <button
+                className="btn btn-outline w-full"
+                onClick={() => setShowReset(false)}
+              >
+                Cancel
+              </button>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

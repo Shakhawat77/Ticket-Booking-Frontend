@@ -8,6 +8,8 @@ import toast, { Toaster } from "react-hot-toast";
 const Register = () => {
   const { createUser } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
+  const from = location.state?.from?.pathname || "/";
 
   const [name, setName] = useState("");
   const [photoURL, setPhotoURL] = useState("");
@@ -15,52 +17,51 @@ const Register = () => {
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
 
+  // Password Validation
   const validatePassword = (password) => {
     const uppercase = /[A-Z]/.test(password);
     const lowercase = /[a-z]/.test(password);
     const minLength = password.length >= 6;
     return uppercase && lowercase && minLength;
   };
-  const location = useLocation();
-    const from = location.state?.from?.pathname || "/";
 
   const handleRegister = async (e) => {
     e.preventDefault();
 
     if (!validatePassword(password)) {
-      toast.error("Password must have uppercase, lowercase, and min 6 characters.");
+      toast.error("Password must include uppercase, lowercase & min 6 characters.");
       return;
     }
 
     setLoading(true);
 
     try {
-   
+      // Create user in Firebase
       const result = await createUser(email, password);
+
+      // Update profile with name + photo
       await updateProfile(result.user, {
         displayName: name,
         photoURL: photoURL || null,
       });
+
+      // Store in your database (optional)
       const userData = {
         name,
         email,
         photoURL: photoURL || null,
-        password,
-        role:"USER",
+        role: "USER",
       };
-      // console.log(userData);
 
       await fetch("http://localhost:3000/users", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(userData),
       });
-      console.log(userData);
 
       toast.success("Registration successful!");
-      navigate(from, { replace: true }); 
+      navigate(from, { replace: true });
+
     } catch (error) {
       console.error(error);
       toast.error(error.message);
@@ -69,8 +70,10 @@ const Register = () => {
     }
   };
 
+  // Google Login
   const handleGoogleLogin = async () => {
     const provider = new GoogleAuthProvider();
+
     try {
       await signInWithPopup(auth, provider);
       toast.success("Google login successful!");
@@ -88,13 +91,15 @@ const Register = () => {
       <div className="hero-content flex-col lg:flex-row-reverse">
         <div className="text-center lg:text-left">
           <h1 className="text-5xl font-bold">Register now!</h1>
-          <p className="py-6">Create your account to post jobs or apply for work.</p>
+          <p className="py-6">Create your account to access TicketBari services.</p>
         </div>
 
         <div className="card bg-gradient-to-r from-[#47aa8e] to-[#6497a8] w-full max-w-sm shadow-2xl">
           <div className="card-body">
+            
             <form onSubmit={handleRegister} className="space-y-4">
-           
+
+              {/* Name */}
               <input
                 type="text"
                 placeholder="Full Name"
@@ -104,6 +109,7 @@ const Register = () => {
                 required
               />
 
+              {/* Photo URL */}
               <input
                 type="text"
                 placeholder="Photo URL"
@@ -112,7 +118,7 @@ const Register = () => {
                 className="input input-bordered w-full bg-[#3a826d] text-white"
               />
 
-        
+              {/* Email */}
               <input
                 type="email"
                 placeholder="Email"
@@ -121,9 +127,11 @@ const Register = () => {
                 className="input input-bordered w-full bg-[#3a826d] text-white"
                 required
               />
+
+              {/* Password */}
               <input
                 type="password"
-                placeholder="Password"
+                placeholder="Password (A-Z, a-z, 6+ chars)"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 className="input input-bordered w-full bg-[#3a826d] text-white"
@@ -141,6 +149,7 @@ const Register = () => {
 
             <div className="divider">OR</div>
 
+            {/* Google Login */}
             <button onClick={handleGoogleLogin} className="btn btn-outline w-full">
               Continue with Google
             </button>
@@ -151,6 +160,7 @@ const Register = () => {
                 Login
               </Link>
             </p>
+
           </div>
         </div>
       </div>

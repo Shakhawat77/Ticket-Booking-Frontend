@@ -1,38 +1,36 @@
-import { createContext, useEffect, useState, useContext } from "react";
+import { createContext, useContext, useState, useEffect } from "react";
 import { 
-   createUserWithEmailAndPassword, 
-  onAuthStateChanged, 
+  createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
-  signOut
+  signOut,
+  onAuthStateChanged
 } from "firebase/auth";
-import { auth } from "./../firebase/firebase.init";
+import { auth } from "../firebase/firebase.init";
 
+// 1️⃣ Create context
 export const AuthContext = createContext();
+
+// 2️⃣ Custom hook to consume context
 export const useAuth = () => useContext(AuthContext);
 
-export const AuthProvider = ({ children }) => {
+// 3️⃣ Provider component
+const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
-//   const createUser = (email, password) => {
-//     setLoading(true);
-//     return createUserWithEmailAndPassword(auth, email, password);
-//   };
-const createUser = async (email, password) => {
+  const createUser = (email, password) => {
     setLoading(true);
-    try {
-      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-      setLoading(false);
-      return userCredential;
-    } catch (error) {
-      setLoading(false);
-      throw error;
-    }
+    return createUserWithEmailAndPassword(auth, email, password);
   };
 
   const signInUser = (email, password) => {
     setLoading(true);
     return signInWithEmailAndPassword(auth, email, password);
+  };
+
+  const logOut = async () => {
+    await signOut(auth);
+    setUser(null);
   };
 
   useEffect(() => {
@@ -44,19 +42,7 @@ const createUser = async (email, password) => {
     return () => unsubscribe();
   }, []);
 
-  // Fixed logout: set user to null after signing out
-  const logOut = async () => {
-    await signOut(auth);
-    setUser(null); // <- ensures Navbar hides user info after logout
-  };
-
-  const authInfo = {
-    createUser,
-    signInUser,
-    logOut,
-    user,
-    loading
-  };
+  const authInfo = { createUser, signInUser, logOut, user, loading };
 
   return (
     <AuthContext.Provider value={authInfo}>
