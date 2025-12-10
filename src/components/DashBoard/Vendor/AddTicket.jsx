@@ -40,36 +40,48 @@ const AddTicket = () => {
       `https://api.imgbb.com/1/upload?key=0ef452beda453c082cb0d572cb02e855`,
       { method: "POST", body: formData }
     );
-
     const data = await res.json();
     return data.data.url;
   };
 
   const handleSubmit = async (e) => {
-    e.preventDefault();
+    e.preventDefault(); // prevent reload
+
     const imageFile = e.target.image.files[0];
     let imageUrl = "";
 
     try {
-      if (imageFile) imageUrl = await uploadImage(imageFile);
+      if (imageFile) {
+        imageUrl = await uploadImage(imageFile);
+      }
 
+      // Convert perks object to array
+      const selectedPerks = Object.keys(perks).filter((key) => perks[key]);
+
+      // Prepare ticket data
       const finalTicket = {
         ...ticketData,
-        perks,
+        perks: selectedPerks,
         image: imageUrl || "",
-        vendorName: user?.displayName,
-        vendorEmail: user?.email,
+        vendorName: user?.displayName || "",
+        vendorEmail: user?.email || "",
         verificationStatus: "pending",
-        dateTime: ticketData.date + " " + ticketData.time,
+        departureDate: ticketData.date,
+        departureTime: ticketData.time,
       };
 
-      await fetch("http://localhost:3000/tickets", {
+      // Send POST request
+      const response = await fetch("http://localhost:3000/tickets", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(finalTicket),
       });
 
+      if (!response.ok) throw new Error("Failed to add ticket");
+
       toast.success("Ticket added successfully!");
+
+      // Reset form
       e.target.reset();
       setPerks({ ac: false, wifi: false, breakfast: false, tv: false });
       setTicketData({
@@ -84,14 +96,16 @@ const AddTicket = () => {
       });
     } catch (error) {
       console.error(error);
-      toast.error("Something went wrong!");
+      toast.error(error.message || "Something went wrong!");
     }
   };
 
   return (
     <div className="max-w-3xl mx-auto mt-10 p-6 bg-white rounded-lg shadow-lg">
       <Toaster />
-      <h2 className="text-3xl font-bold mb-6 text-center text-blue-700">Add New Ticket</h2>
+      <h2 className="text-3xl font-bold mb-6 text-center text-blue-700">
+        Add New Ticket
+      </h2>
 
       <form onSubmit={handleSubmit} className="space-y-4">
         {/* Ticket Title */}
@@ -208,13 +222,13 @@ const AddTicket = () => {
         {/* Vendor Info (readonly) */}
         <input
           type="text"
-          value={user?.displayName}
+          value={user?.displayName || ""}
           readOnly
           className="w-full border p-3 rounded bg-gray-100 text-gray-700"
         />
         <input
           type="email"
-          value={user?.email}
+          value={user?.email || ""}
           readOnly
           className="w-full border p-3 rounded bg-gray-100 text-gray-700"
         />

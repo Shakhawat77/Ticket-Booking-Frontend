@@ -10,9 +10,10 @@ import Login from "./components/Login/Login.jsx";
 import ErrorPage from "./components/ErrorPage/ErrorPage.jsx";
 import AuthProvider from "./context/AuthProvider.jsx";
 import AllTicket from "./components/AllTicket/AllTicket.jsx";
-import DashBoard from "./components/DashBoard/DashBoard.js";
 import PrivateRoute from "./Routs/PrivateRoute.jsx";
 import AddTicket from "./components/DashBoard/Vendor/AddTicket.jsx";
+import TicketDetails from "./components/DashBoard/User/TicketDetails.jsx";
+import DashboardLayout from "./components/DashBoard/DashboardLayout.jsx";
 
 const router = createBrowserRouter([
   {
@@ -22,20 +23,43 @@ const router = createBrowserRouter([
       { index: true, element: <Home /> },
       { path: "/register", element: <Register /> },
       { path: "/login", element: <Login /> },
+     {
+  path: "/dashboard",
+  element: (
+    <PrivateRoute>
+      <DashboardLayout />
+    </PrivateRoute>
+  ),
+},
       {
-        path: "/all-ticket",
-        element: <PrivateRoute><AllTicket /></PrivateRoute>,
+        path: "/allTickets",
+        element: (
+          <PrivateRoute>
+            <AllTicket />
+          </PrivateRoute>
+        ),
       },
       {
-        path: "/dashboard",
-        element: <PrivateRoute><DashBoard /></PrivateRoute>,
+        path: "/allTickets/:id",
+        element: <TicketDetails />,
       },
+      // {
+      //   path: "/dashboard",
+      //   element: (
+      //     <PrivateRoute>
+      //       <DashBoard />
+      //     </PrivateRoute>
+      //   ),
+      // },
       {
         path: "/addTicket",
-        element: <PrivateRoute><AddTicket /></PrivateRoute>,
+        element: (
+          <PrivateRoute>
+            <AddTicket />
+          </PrivateRoute>
+        ),
       },
-      { path: "*", 
-        element: <ErrorPage /> },
+      { path: "*", element: <ErrorPage /> },
     ],
   },
 ]);

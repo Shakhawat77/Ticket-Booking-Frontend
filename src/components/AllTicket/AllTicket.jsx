@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from "react";
-import { Link } from "react-router";
+import {  useNavigate } from "react-router";
 
 const AllTicket = () => {
   const [tickets, setTickets] = useState([]);
   const [loading, setLoading] = useState(true);
-
+ const navigate = useNavigate();
   // Fetch admin-approved tickets
   useEffect(() => {
     fetch("http://localhost:3000/tickets?verificationStatus=approved")
@@ -36,7 +36,7 @@ const AllTicket = () => {
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8">
         {tickets.map((ticket) => (
           <div
-            key={ticket.id}
+            key={ticket._id}
             className="bg-white shadow-lg rounded-xl overflow-hidden transform hover:-translate-y-2 hover:shadow-2xl transition duration-300 flex flex-col"
           >
             <img
@@ -78,12 +78,12 @@ const AllTicket = () => {
                 Departure: {new Date(ticket.departureDate).toLocaleString()}
               </p>
 
-              <Link
-                to={`/ticket/${ticket.id}`}
-                className="mt-auto btn btn-sm bg-gradient-to-r from-blue-500 to-blue-700 text-white hover:from-blue-600 hover:to-blue-800"
-              >
-                See Details
-              </Link>
+                <button
+            onClick={() =>navigate(`/allTickets/${ticket._id}`)}
+            className="mt-2 px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700"
+          >
+            View Details
+          </button>
             </div>
           </div>
         ))}

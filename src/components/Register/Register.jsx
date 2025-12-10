@@ -48,6 +48,7 @@ const Register = () => {
       // Store in your database (optional)
       const userData = {
         name,
+        password,
         email,
         photoURL: photoURL || null,
         role: "USER",
