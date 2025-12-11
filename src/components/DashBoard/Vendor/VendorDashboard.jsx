@@ -29,7 +29,7 @@ const VendorDashboard = () => {
       case "revenue":
         return <RevenueOverview />;
       default:
-        return null;
+        return <div>Select a tab to view content</div>;
     }
   };
 
@@ -42,8 +42,10 @@ const VendorDashboard = () => {
           {tabs.map((tab) => (
             <li key={tab.id}>
               <button
-                className={`w-full text-left px-4 py-2 rounded hover:bg-blue-500 hover:text-white ${
-                  activeTab === tab.id ? "bg-blue-500 text-white" : "text-gray-700"
+                className={`w-full text-left px-4 py-2 rounded focus:outline-none focus:ring-2 focus:ring-blue-400 transition-colors ${
+                  activeTab === tab.id
+                    ? "bg-blue-500 text-white font-semibold"
+                    : "text-gray-700 hover:bg-blue-100 hover:text-blue-700"
                 }`}
                 onClick={() => setActiveTab(tab.id)}
               >

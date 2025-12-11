@@ -2,8 +2,9 @@ import React, { useState } from "react";
 import { useAuth } from "../../context/AuthProvider.jsx";
 import { useNavigate, Link, useLocation } from "react-router";
 import { GoogleAuthProvider, signInWithPopup, updateProfile } from "firebase/auth";
-import { auth } from "../../firebase/firebase.init";
+import { auth, db } from "../../firebase/firebase.init";
 import toast, { Toaster } from "react-hot-toast";
+import { doc, setDoc } from "firebase/firestore";
 
 const Register = () => {
   const { createUser } = useAuth();
@@ -38,7 +39,14 @@ const Register = () => {
     try {
       // Create user in Firebase
       const result = await createUser(email, password);
+      
+const user = result.user;
 
+      // Save default role in Firestore
+      await setDoc(doc(db, "users", user.uid), {
+        email: user.email,
+        role: "user" 
+      });
       // Update profile with name + photo
       await updateProfile(result.user, {
         displayName: name,

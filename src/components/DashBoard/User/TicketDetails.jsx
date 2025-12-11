@@ -6,6 +6,7 @@ import { AuthContext } from "../../../context/AuthProvider";
 const TicketDetails = () => {
   const { id } = useParams();
   const { user } = useContext(AuthContext);
+  const backendUrl = import.meta.env.VITE_BACKEND_URL;
 
   const [ticket, setTicket] = useState(null);
   const [quantity, setQuantity] = useState(1);
@@ -13,10 +14,11 @@ const TicketDetails = () => {
 
   // Fetch ticket details
   useEffect(() => {
-    fetch(`http://localhost:3000/tickets/${id}`)
+    fetch(`${backendUrl}/tickets/${id}`)
       .then((res) => res.json())
-      .then((data) => setTicket(data));
-  }, [id]);
+      .then((data) => setTicket(data))
+      .catch(console.error);
+  }, [id, backendUrl]);
 
   // Countdown timer
   useEffect(() => {
@@ -50,8 +52,8 @@ const TicketDetails = () => {
 
     const selectedQuantity = Number(quantity);
 
-    if (selectedQuantity > ticket.quantity) {
-      toast.error("Booking quantity cannot exceed available tickets");
+    if (selectedQuantity < 1 || selectedQuantity > ticket.quantity) {
+      toast.error("Booking quantity invalid");
       return;
     }
 
@@ -67,33 +69,36 @@ const TicketDetails = () => {
       userEmail: user.email,
       userName: user.displayName,
       quantity: selectedQuantity,
-      totalPrice: totalPrice,
+      totalPrice,
       status: "pending",
     };
 
     try {
-      const res = await fetch("http://localhost:3000/bookings", {
+      const res = await fetch(`${backendUrl}/bookings`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(bookingData),
       });
-      const data = await res.json();
-      toast.success("Booking successful!");
+
+      if (!res.ok) throw new Error("Booking failed");
+
+      toast.success("Booking request sent!");
+      setQuantity(1);
     } catch (err) {
       console.error(err);
-      toast.error("Booking failed");
+      toast.error(err.message || "Booking failed");
     }
   };
 
   if (!ticket) return <div className="text-center mt-20">Loading...</div>;
 
-  // Disable book now if departure passed or quantity 0
   const departurePassed = new Date(ticket.departureDateTime) < new Date();
   const isDisabled = departurePassed || ticket.quantity <= 0;
 
   return (
     <div className="max-w-4xl mx-auto mt-10 bg-white rounded-lg shadow-lg overflow-hidden">
       <Toaster />
+
       {/* Ticket Image */}
       {ticket.image && (
         <img
@@ -105,23 +110,19 @@ const TicketDetails = () => {
 
       {/* Ticket Info */}
       <div className="p-6">
-        <h2 className="text-3xl font-bold mb-4 text-blue-700">
-          {ticket.title}
-        </h2>
+        <h2 className="text-3xl font-bold mb-4 text-blue-700">{ticket.title}</h2>
         <p className="mb-2">
           <span className="font-semibold">From:</span> {ticket.from} →{" "}
           <span className="font-semibold">To:</span> {ticket.to}
         </p>
         <p className="mb-2">
-          <span className="font-semibold">Transport:</span>{" "}
-          {ticket.transportType}
+          <span className="font-semibold">Transport:</span> {ticket.transportType}
         </p>
         <p className="mb-2">
           <span className="font-semibold">Price:</span> ${ticket.price}
         </p>
         <p className="mb-2">
-          <span className="font-semibold">Available Tickets:</span>{" "}
-          {ticket.quantity}
+          <span className="font-semibold">Available Tickets:</span> {ticket.quantity}
         </p>
         <p className="mb-2">
           <span className="font-semibold">Departure:</span>{" "}
@@ -138,7 +139,7 @@ const TicketDetails = () => {
             min="1"
             max={ticket.quantity}
             value={quantity}
-            onChange={(e) => setQuantity(e.target.value)}
+            onChange={(e) => setQuantity(Number(e.target.value))}
             className="border p-2 w-24 rounded focus:outline-none focus:ring-2 focus:ring-blue-400"
           />
           <button

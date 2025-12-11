@@ -6,21 +6,30 @@ const MyAddedTickets = () => {
   const { user } = useContext(AuthContext);
   const [tickets, setTickets] = useState([]);
 
+  const backendUrl = import.meta.env.VITE_BACKEND_URL;
+
   useEffect(() => {
-    fetch(`http://localhost:3000/tickets?vendorEmail=${user?.email}`)
+    if (!user?.email) return;
+
+    fetch(`${backendUrl}/tickets?vendorEmail=${user.email}`)
       .then((res) => res.json())
       .then(setTickets)
-      .catch((err) => console.error(err));
-  }, [user?.email]);
+      .catch((err) => {
+        console.error(err);
+        toast.error("Failed to fetch tickets");
+      });
+  }, [user?.email, backendUrl]);
 
-  const handleDelete = async (id) => {
+  const handleDelete = async (_id) => {
     try {
-      await fetch(`http://localhost:3000/tickets/${id}`, { method: "DELETE" });
-      setTickets(tickets.filter((t) => t.id !== id));
+      const res = await fetch(`${backendUrl}/tickets/${_id}`, { method: "DELETE" });
+      if (!res.ok) throw new Error("Failed to delete ticket");
+
+      setTickets((prev) => prev.filter((t) => t._id !== _id));
       toast.success("Ticket deleted!");
     } catch (err) {
       console.error(err);
-      toast.error("Failed to delete ticket!");
+      toast.error(err.message || "Failed to delete ticket!");
     }
   };
 
@@ -29,10 +38,16 @@ const MyAddedTickets = () => {
       <h2 className="text-2xl font-bold mb-4">My Added Tickets</h2>
       <div className="grid md:grid-cols-3 gap-4">
         {tickets.map((ticket) => (
-          <div key={ticket.id} className="bg-white p-4 rounded shadow">
-            <img src={ticket.image} alt={ticket.title} className="w-full h-32 object-cover rounded mb-2" />
+          <div key={ticket._id} className="bg-white p-4 rounded shadow">
+            <img
+              src={ticket.image}
+              alt={ticket.title}
+              className="w-full h-32 object-cover rounded mb-2"
+            />
             <h3 className="font-bold">{ticket.title}</h3>
-            <p><strong>From:</strong> {ticket.from} → <strong>To:</strong> {ticket.to}</p>
+            <p>
+              <strong>From:</strong> {ticket.from} → <strong>To:</strong> {ticket.to}
+            </p>
             <p><strong>Transport:</strong> {ticket.transportType}</p>
             <p><strong>Price:</strong> ${ticket.price}</p>
             <p><strong>Quantity:</strong> {ticket.quantity}</p>
@@ -47,7 +62,7 @@ const MyAddedTickets = () => {
               <button
                 className="btn btn-sm btn-red-500"
                 disabled={ticket.verificationStatus === "rejected"}
-                onClick={() => handleDelete(ticket.id)}
+                onClick={() => handleDelete(ticket._id)}
               >
                 Delete
               </button>

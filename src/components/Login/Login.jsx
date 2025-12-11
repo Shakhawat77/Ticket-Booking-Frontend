@@ -4,6 +4,7 @@ import { GoogleAuthProvider, signInWithPopup, sendPasswordResetEmail } from "fir
 import { auth } from "../../firebase/firebase.init";
 import toast, { Toaster } from "react-hot-toast";
 import { useAuth } from "../../context/AuthProvider";
+import axios from "axios";
 
 const Login = () => {
   const { signInUser } = useAuth();
@@ -18,38 +19,64 @@ const Login = () => {
 
   const from = location.state?.from?.pathname || "/";
 
+  // Email/Password login
   const handleLogin = async (e) => {
     e.preventDefault();
     setLoading(true);
     try {
+      // Firebase login
       await signInUser(email, password);
+
+      // Fetch JWT from backend
+      const { data } = await axios.get(`${process.env.REACT_APP_BACKEND_URL}/jwt`, {
+        params: { email },
+      });
+
+      localStorage.setItem("accessToken", data.token);
       toast.success("Login successful!");
       navigate(from, { replace: true });
     } catch (error) {
       console.error(error);
-      toast.error(error.message);
+      toast.error(error.response?.data?.message || error.message);
     } finally {
       setLoading(false);
     }
   };
 
+  // Google login
   const handleGoogleLogin = async () => {
     const provider = new GoogleAuthProvider();
+    setLoading(true);
     try {
-      await signInWithPopup(auth, provider);
+      const result = await signInWithPopup(auth, provider);
+      const user = result.user;
+
+      // Send user info to backend
+      const { data } = await axios.post(
+        `${process.env.REACT_APP_BACKEND_URL}/users/google-login`,
+        {
+          name: user.displayName,
+          email: user.email,
+          photoURL: user.photoURL,
+          uid: user.uid,
+        }
+      );
+
+      localStorage.setItem("accessToken", data.token);
       toast.success("Google login successful!");
       navigate(from, { replace: true });
     } catch (error) {
       console.error(error);
-      toast.error(error.message);
+      toast.error(error.response?.data?.message || error.message);
+    } finally {
+      setLoading(false);
     }
   };
 
+  // Reset password
   const handleResetPassword = async (e) => {
     e.preventDefault();
-    if (!resetEmail) {
-      return toast.error("Please enter your email!");
-    }
+    if (!resetEmail) return toast.error("Please enter your email!");
 
     try {
       await sendPasswordResetEmail(auth, resetEmail);
@@ -68,9 +95,7 @@ const Login = () => {
       <div className="hero-content flex-col lg:flex-row-reverse ">
         <div className="text-center lg:text-left">
           <h1 className="text-5xl font-bold">Login now!</h1>
-          <p className="py-6">
-            Access your account to post jobs or apply for work.
-          </p>
+          <p className="py-6">Access your account to post jobs or apply for work.</p>
         </div>
 
         <div className="card bg-gradient-to-r from-[#49c9a5] to-[#4db4d7] w-full max-w-sm shadow-2xl">
@@ -102,21 +127,14 @@ const Login = () => {
                 </span>
               </div>
 
-              <button
-                className="btn btn-neutral w-full mt-2"
-                type="submit"
-                disabled={loading}
-              >
+              <button className="btn btn-neutral w-full mt-2" type="submit" disabled={loading}>
                 {loading ? "Logging in..." : "Login"}
               </button>
             </form>
 
             <div className="divider">OR</div>
 
-            <button
-              onClick={handleGoogleLogin}
-              className="btn btn-outline w-full"
-            >
+            <button onClick={handleGoogleLogin} className="btn btn-outline w-full">
               Continue with Google
             </button>
 
@@ -129,11 +147,11 @@ const Login = () => {
           </div>
         </div>
       </div>
+
       {showReset && (
         <div className="fixed inset-0 bg-black/50 flex justify-center items-center">
           <div className="bg-white p-6 rounded-lg w-80 shadow-lg">
             <h2 className="text-xl font-semibold mb-3">Reset Password</h2>
-
             <form onSubmit={handleResetPassword}>
               <input
                 type="email"
@@ -142,15 +160,10 @@ const Login = () => {
                 onChange={(e) => setResetEmail(e.target.value)}
                 className="input input-bordered w-full mb-3"
               />
-
               <button className="btn btn-primary w-full mb-2" type="submit">
                 Send Reset Email
               </button>
-
-              <button
-                className="btn btn-outline w-full"
-                onClick={() => setShowReset(false)}
-              >
+              <button className="btn btn-outline w-full" onClick={() => setShowReset(false)}>
                 Cancel
               </button>
             </form>

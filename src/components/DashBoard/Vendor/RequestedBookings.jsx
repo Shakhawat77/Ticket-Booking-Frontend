@@ -6,25 +6,39 @@ const RequestedBookings = () => {
   const { user } = useContext(AuthContext);
   const [bookings, setBookings] = useState([]);
 
+  const backendUrl = import.meta.env.VITE_BACKEND_URL;
+
   useEffect(() => {
-    fetch(`http://localhost:3000/bookings?vendorEmail=${user?.email}&status=pending`)
+    if (!user?.email) return;
+
+    fetch(`${backendUrl}/bookings?vendorEmail=${user.email}&status=pending`)
       .then((res) => res.json())
       .then(setBookings)
-      .catch(console.error);
-  }, [user?.email]);
+      .catch((err) => {
+        console.error(err);
+        toast.error("Failed to fetch bookings");
+      });
+  }, [user?.email, backendUrl]);
 
-  const handleStatus = async (id, status) => {
+  const handleStatus = async (_id, status) => {
     try {
-      await fetch(`http://localhost:3000/bookings/${id}`, {
+      const res = await fetch(`${backendUrl}/bookings/${_id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ status }),
       });
-      setBookings(bookings.map(b => b.id === id ? { ...b, status } : b));
+
+      if (!res.ok) throw new Error("Failed to update booking status");
+
+      // Update local state
+      setBookings((prev) =>
+        prev.map((b) => (b._id === _id ? { ...b, status } : b))
+      );
+
       toast.success(`Booking ${status}`);
     } catch (err) {
       console.error(err);
-      toast.error("Failed to update status");
+      toast.error(err.message || "Failed to update status");
     }
   };
 
@@ -43,14 +57,24 @@ const RequestedBookings = () => {
         </thead>
         <tbody>
           {bookings.map((b) => (
-            <tr key={b.id}>
+            <tr key={b._id}>
               <td className="border px-2 py-1">{b.userName} ({b.userEmail})</td>
               <td className="border px-2 py-1">{b.ticketTitle}</td>
               <td className="border px-2 py-1">{b.quantity}</td>
               <td className="border px-2 py-1">${b.totalPrice}</td>
               <td className="border px-2 py-1 flex gap-2">
-                <button className="btn btn-sm btn-primary" onClick={() => handleStatus(b.id, "accepted")}>Accept</button>
-                <button className="btn btn-sm btn-red-500" onClick={() => handleStatus(b.id, "rejected")}>Reject</button>
+                <button
+                  className="btn btn-sm btn-primary"
+                  onClick={() => handleStatus(b._id, "accepted")}
+                >
+                  Accept
+                </button>
+                <button
+                  className="btn btn-sm btn-red-500"
+                  onClick={() => handleStatus(b._id, "rejected")}
+                >
+                  Reject
+                </button>
               </td>
             </tr>
           ))}

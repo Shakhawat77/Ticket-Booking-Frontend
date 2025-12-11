@@ -1,39 +1,53 @@
 import React, { useEffect, useState } from "react";
-import { Link } from "react-router";
+import { Link } from "react-router-dom"; // <-- fixed
 
 const Home = () => {
   const [advertisedTickets, setAdvertisedTickets] = useState([]);
   const [latestTickets, setLatestTickets] = useState([]);
 
-  // Fetch tickets from your backend
+  // Fetch tickets from backend
   useEffect(() => {
-    // Advertisement tickets (admin selected, max 6)
-    fetch("http://localhost:3000/tickets/advertised")
+    // Advertisement tickets (approved & advertised)
+    fetch("http://localhost:3000/tickets?advertised=true")
       .then((res) => res.json())
-      .then((data) => setAdvertisedTickets(data));
+      .then((data) => setAdvertisedTickets(data))
+      .catch((err) => console.error("Error fetching advertised tickets:", err));
 
-    // Latest tickets (6-8 recently added)
-    fetch("http://localhost:3000/tickets/latest")
+    // Latest tickets (recently added)
+    fetch("http://localhost:3000/tickets")
       .then((res) => res.json())
-      .then((data) => setLatestTickets(data));
+      .then((data) => {
+        const sorted = data
+          .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+          .slice(0, 8); // last 6-8 tickets
+        setLatestTickets(sorted);
+      })
+      .catch((err) => console.error("Error fetching latest tickets:", err));
   }, []);
 
   const TicketCard = ({ ticket }) => (
     <div className="bg-white shadow-lg rounded-lg p-4 flex flex-col hover:shadow-xl transition-shadow duration-300">
-      <img
-        src={ticket.image}
-        alt={ticket.title}
-        className="h-40 w-full object-cover rounded mb-2"
-      />
+      {ticket.image && (
+        <img
+          src={ticket.image}
+          alt={ticket.title}
+          className="h-40 w-full object-cover rounded mb-2"
+        />
+      )}
       <h2 className="font-bold text-lg mt-2">{ticket.title}</h2>
       <p className="text-gray-700">Price: ${ticket.price}</p>
       <p className="text-gray-700">Quantity: {ticket.quantity}</p>
       <p className="text-gray-700">Transport: {ticket.transportType}</p>
       <p className="text-gray-700">
-        Perks: {ticket.perks?.length ? ticket.perks.join(", ") : "None"}
+        Perks:{" "}
+        {ticket.perks
+          ? Array.isArray(ticket.perks)
+            ? ticket.perks.join(", ")
+            : Object.values(ticket.perks).join(", ")
+          : "None"}
       </p>
       <Link
-        to={`/ticket/${ticket._id}`}
+        to={`/allTickets/${ticket._id}`} // <-- fixed route
         className="mt-auto btn btn-sm bg-blue-600 text-white hover:bg-blue-700 mt-2"
       >
         See Details
@@ -49,24 +63,28 @@ const Home = () => {
       </div>
 
       {/* Advertisement Section */}
-      <section>
-        <h2 className="text-2xl font-bold mb-4">Advertisement Tickets</h2>
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
-          {advertisedTickets.map((ticket) => (
-            <TicketCard key={ticket._id} ticket={ticket} />
-          ))}
-        </div>
-      </section>
+      {advertisedTickets.length > 0 && (
+        <section>
+          <h2 className="text-2xl font-bold mb-4">Advertisement Tickets</h2>
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+            {advertisedTickets.map((ticket) => (
+              <TicketCard key={ticket._id} ticket={ticket} />
+            ))}
+          </div>
+        </section>
+      )}
 
       {/* Latest Tickets Section */}
-      <section>
-        <h2 className="text-2xl font-bold mb-4">Latest Tickets</h2>
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-          {latestTickets.map((ticket) => (
-            <TicketCard key={ticket._id} ticket={ticket} />
-          ))}
-        </div>
-      </section>
+      {latestTickets.length > 0 && (
+        <section>
+          <h2 className="text-2xl font-bold mb-4">Latest Tickets</h2>
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+            {latestTickets.map((ticket) => (
+              <TicketCard key={ticket._id} ticket={ticket} />
+            ))}
+          </div>
+        </section>
+      )}
 
       {/* Extra Section 1 */}
       <section className="bg-gray-100 p-8 rounded">

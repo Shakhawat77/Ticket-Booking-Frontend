@@ -1,48 +1,55 @@
 import React, { useEffect, useState } from "react";
-import toast from "react-hot-toast";
+import toast, { Toaster } from "react-hot-toast";
 
 const ManageUsers = () => {
   const [users, setUsers] = useState([]);
+  const backendUrl = import.meta.env.VITE_BACKEND_URL;
 
+  // Fetch users
   useEffect(() => {
-    fetch("http://localhost:3000/users")
-      .then(res => res.json())
+    fetch(`${backendUrl}/users`)
+      .then((res) => res.json())
       .then(setUsers)
       .catch(console.error);
-  }, []);
+  }, [backendUrl]);
 
-  const updateRole = async (id, role) => {
+  // Update user role
+  const updateRole = async (_id, role) => {
     try {
-      await fetch(`http://localhost:3000/users/${id}`, {
+      const res = await fetch(`${backendUrl}/users/${_id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ role }),
       });
-      setUsers(users.map(u => u.id === id ? { ...u, role } : u));
+      if (!res.ok) throw new Error("Failed to update role");
+      setUsers(users.map(u => u._id === _id ? { ...u, role } : u));
       toast.success(`Role updated to ${role}`);
     } catch (err) {
       console.error(err);
-      toast.error("Failed to update role");
+      toast.error(err.message || "Failed to update role");
     }
   };
 
-  const markFraud = async (id) => {
+  // Mark user as fraud
+  const markFraud = async (_id) => {
     try {
-      await fetch(`http://localhost:3000/users/${id}`, {
+      const res = await fetch(`${backendUrl}/users/${_id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ fraud: true }),
       });
-      setUsers(users.map(u => u.id === id ? { ...u, fraud: true } : u));
+      if (!res.ok) throw new Error("Failed to mark as fraud");
+      setUsers(users.map(u => u._id === _id ? { ...u, fraud: true } : u));
       toast.success("User marked as fraud");
     } catch (err) {
       console.error(err);
-      toast.error("Failed to mark fraud");
+      toast.error(err.message || "Failed to mark fraud");
     }
   };
 
   return (
-    <div>
+    <div className="p-4">
+      <Toaster />
       <h2 className="text-2xl font-bold mb-4">Manage Users</h2>
       <table className="table-auto w-full border">
         <thead>
@@ -54,20 +61,35 @@ const ManageUsers = () => {
           </tr>
         </thead>
         <tbody>
-          {users.map(user => (
-            <tr key={user.id}>
+          {users.map((user) => (
+            <tr key={user._id}>
               <td className="border px-2 py-1">{user.name}</td>
               <td className="border px-2 py-1">{user.email}</td>
               <td className="border px-2 py-1">{user.role}</td>
-              <td className="border px-2 py-1 flex gap-2">
-                {user.role !== "admin" && (
+              <td className="border px-2 py-1 flex gap-2 flex-wrap">
+                {user.role !== "ADMIN" && (
                   <>
-                    <button className="btn btn-sm btn-primary" onClick={() => updateRole(user.id, "admin")}>Make Admin</button>
-                    <button className="btn btn-sm btn-secondary" onClick={() => updateRole(user.id, "vendor")}>Make Vendor</button>
+                    <button
+                      className="btn btn-sm btn-primary"
+                      onClick={() => updateRole(user._id, "ADMIN")}
+                    >
+                      Make Admin
+                    </button>
+                    <button
+                      className="btn btn-sm btn-secondary"
+                      onClick={() => updateRole(user._id, "VENDOR")}
+                    >
+                      Make Vendor
+                    </button>
                   </>
                 )}
-                {user.role === "vendor" && !user.fraud && (
-                  <button className="btn btn-sm btn-red-500" onClick={() => markFraud(user.id)}>Mark as Fraud</button>
+                {user.role === "VENDOR" && !user.fraud && (
+                  <button
+                    className="btn btn-sm btn-red-500"
+                    onClick={() => markFraud(user._id)}
+                  >
+                    Mark as Fraud
+                  </button>
                 )}
               </td>
             </tr>

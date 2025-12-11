@@ -1,23 +1,32 @@
 import React, { useEffect, useState } from "react";
-import toast from "react-hot-toast";
+import toast, { Toaster } from "react-hot-toast";
 
 const AdvertiseTickets = () => {
   const [tickets, setTickets] = useState([]);
   const [loading, setLoading] = useState(true);
+  const backendUrl = import.meta.env.VITE_BACKEND_URL;
 
+  // Fetch approved tickets
   useEffect(() => {
-    fetch("http://localhost:3000/tickets?verificationStatus=approved")
-      .then(res => res.json())
-      .then(data => {
+    fetch(`${backendUrl}/tickets?verificationStatus=approved`)
+      .then((res) => res.json())
+      .then((data) => {
         setTickets(data);
         setLoading(false);
       })
-      .catch(console.error);
-  }, []);
+      .catch((err) => {
+        console.error(err);
+        toast.error("Failed to load tickets");
+        setLoading(false);
+      });
+  }, [backendUrl]);
 
-  const toggleAdvertise = async (id) => {
-    const countAdvertised = tickets.filter(t => t.advertise).length;
-    const ticket = tickets.find(t => t.id === id);
+  // Toggle advertise status
+  const toggleAdvertise = async (_id) => {
+    const ticket = tickets.find((t) => t._id === _id);
+    if (!ticket) return;
+
+    const countAdvertised = tickets.filter((t) => t.advertise).length;
     const newValue = !ticket.advertise;
 
     if (newValue && countAdvertised >= 6) {
@@ -26,23 +35,30 @@ const AdvertiseTickets = () => {
     }
 
     try {
-      await fetch(`http://localhost:3000/tickets/${id}`, {
+      const res = await fetch(`${backendUrl}/tickets/${_id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ advertise: newValue }),
       });
-      setTickets(tickets.map(t => t.id === id ? { ...t, advertise: newValue } : t));
+      if (!res.ok) throw new Error("Failed to update advertise status");
+
+      setTickets(
+        tickets.map((t) =>
+          t._id === _id ? { ...t, advertise: newValue } : t
+        )
+      );
       toast.success(`Ticket ${newValue ? "advertised" : "unadvertised"}`);
     } catch (err) {
       console.error(err);
-      toast.error("Failed to update advertise status");
+      toast.error(err.message || "Failed to update advertise status");
     }
   };
 
-  if (loading) return <p>Loading...</p>;
+  if (loading) return <p className="text-center mt-6">Loading...</p>;
 
   return (
-    <div>
+    <div className="p-4">
+      <Toaster />
       <h2 className="text-2xl font-bold mb-4">Advertise Tickets</h2>
       <table className="table-auto w-full border">
         <thead>
@@ -54,13 +70,17 @@ const AdvertiseTickets = () => {
           </tr>
         </thead>
         <tbody>
-          {tickets.map(ticket => (
-            <tr key={ticket.id}>
+          {tickets.map((ticket) => (
+            <tr key={ticket._id}>
               <td className="border px-2 py-1">{ticket.title}</td>
               <td className="border px-2 py-1">{ticket.vendorName}</td>
               <td className="border px-2 py-1">${ticket.price}</td>
-              <td className="border px-2 py-1">
-                <input type="checkbox" checked={ticket.advertise || false} onChange={() => toggleAdvertise(ticket.id)} />
+              <td className="border px-2 py-1 text-center">
+                <input
+                  type="checkbox"
+                  checked={ticket.advertise || false}
+                  onChange={() => toggleAdvertise(ticket._id)}
+                />
               </td>
             </tr>
           ))}

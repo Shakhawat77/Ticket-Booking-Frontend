@@ -1,9 +1,10 @@
-import { useContext, useState } from "react";
+import React, { useContext, useState } from "react";
 import toast, { Toaster } from "react-hot-toast";
 import { AuthContext } from "../../../context/AuthProvider";
 
 const AddTicket = () => {
   const { user } = useContext(AuthContext);
+  const backendUrl = import.meta.env.VITE_BACKEND_URL;
 
   const [perks, setPerks] = useState({
     ac: false,
@@ -31,57 +32,58 @@ const AddTicket = () => {
     setPerks({ ...perks, [e.target.name]: e.target.checked });
   };
 
-  // Upload image to imgbb
   const uploadImage = async (imageFile) => {
-    const formData = new FormData();
-    formData.append("image", imageFile);
+    try {
+      const formData = new FormData();
+      formData.append("image", imageFile);
 
-    const res = await fetch(
-      `https://api.imgbb.com/1/upload?key=0ef452beda453c082cb0d572cb02e855`,
-      { method: "POST", body: formData }
-    );
-    const data = await res.json();
-    return data.data.url;
+      const res = await fetch(
+        `https://api.imgbb.com/1/upload?key=0ef452beda453c082cb0d572cb02e855`,
+        { method: "POST", body: formData }
+      );
+      const data = await res.json();
+      return data.data.url;
+    } catch (err) {
+      console.error(err);
+      toast.error("Image upload failed");
+      return "";
+    }
   };
 
   const handleSubmit = async (e) => {
-    e.preventDefault(); // prevent reload
+    e.preventDefault();
 
     const imageFile = e.target.image.files[0];
     let imageUrl = "";
 
+    if (imageFile) {
+      imageUrl = await uploadImage(imageFile);
+    }
+
+    // Convert perks object to array
+    const selectedPerks = Object.keys(perks).filter((key) => perks[key]);
+
+    const finalTicket = {
+      ...ticketData,
+      perks: selectedPerks,
+      image: imageUrl || "",
+      vendorName: user?.displayName || "",
+      vendorEmail: user?.email || "",
+      verificationStatus: "pending",
+      departureDate: ticketData.date,
+      departureTime: ticketData.time,
+    };
+
     try {
-      if (imageFile) {
-        imageUrl = await uploadImage(imageFile);
-      }
-
-      // Convert perks object to array
-      const selectedPerks = Object.keys(perks).filter((key) => perks[key]);
-
-      // Prepare ticket data
-      const finalTicket = {
-        ...ticketData,
-        perks: selectedPerks,
-        image: imageUrl || "",
-        vendorName: user?.displayName || "",
-        vendorEmail: user?.email || "",
-        verificationStatus: "pending",
-        departureDate: ticketData.date,
-        departureTime: ticketData.time,
-      };
-
-      // Send POST request
-      const response = await fetch("http://localhost:3000/tickets", {
+      const res = await fetch(`${backendUrl}/tickets`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(finalTicket),
       });
 
-      if (!response.ok) throw new Error("Failed to add ticket");
+      if (!res.ok) throw new Error("Failed to add ticket");
 
       toast.success("Ticket added successfully!");
-
-      // Reset form
       e.target.reset();
       setPerks({ ac: false, wifi: false, breakfast: false, tv: false });
       setTicketData({
@@ -94,9 +96,9 @@ const AddTicket = () => {
         date: "",
         time: "",
       });
-    } catch (error) {
-      console.error(error);
-      toast.error(error.message || "Something went wrong!");
+    } catch (err) {
+      console.error(err);
+      toast.error(err.message || "Something went wrong!");
     }
   };
 
