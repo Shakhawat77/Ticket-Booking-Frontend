@@ -18,7 +18,7 @@ const Register = () => {
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
 
-  // Password Validation
+  // Password validation
   const validatePassword = (password) => {
     const uppercase = /[A-Z]/.test(password);
     const lowercase = /[a-z]/.test(password);
@@ -37,56 +37,46 @@ const Register = () => {
     setLoading(true);
 
     try {
-      // Create user in Firebase
-      const result = await createUser(email, password);
-      
-const user = result.user;
+      // 1️⃣ Create user in Firebase and MongoDB
+      const result = await createUser(email, password, name);
+      const user = result.user;
 
-      // Save default role in Firestore
-      await setDoc(doc(db, "users", user.uid), {
-        email: user.email,
-        role: "user" 
-      });
-      // Update profile with name + photo
-      await updateProfile(result.user, {
+      // 2️⃣ Update Firebase profile
+      await updateProfile(user, {
         displayName: name,
         photoURL: photoURL || null,
       });
 
-      // Store in your database (optional)
-      const userData = {
-        name,
-        password,
-        email,
-        photoURL: photoURL || null,
+      // 3️⃣ Save default role in Firestore
+      await setDoc(doc(db, "users", user.uid), {
+        email: user.email,
         role: "USER",
-      };
-
-      await fetch("http://localhost:3000/users", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(userData),
       });
 
+      // 4️⃣ Clear all fields
+      setName("");
+      setPhotoURL("");
+      setEmail("");
+      setPassword("");
+
       toast.success("Registration successful!");
-      navigate(from, { replace: true });
+      navigate(from, { replace: true }); // navigate to home or previous page
 
     } catch (error) {
-      console.error(error);
-      toast.error(error.message);
+      console.error("Registration error:", error.response?.data || error.message);
+      toast.error(error.response?.data?.message || error.message);
     } finally {
       setLoading(false);
     }
   };
 
-  // Google Login
+  // Google login
   const handleGoogleLogin = async () => {
     const provider = new GoogleAuthProvider();
-
     try {
       await signInWithPopup(auth, provider);
       toast.success("Google login successful!");
-      navigate("/");
+      navigate(from, { replace: true });
     } catch (error) {
       console.error(error);
       toast.error(error.message);
@@ -105,10 +95,8 @@ const user = result.user;
 
         <div className="card bg-gradient-to-r from-[#47aa8e] to-[#6497a8] w-full max-w-sm shadow-2xl">
           <div className="card-body">
-            
             <form onSubmit={handleRegister} className="space-y-4">
 
-              {/* Name */}
               <input
                 type="text"
                 placeholder="Full Name"
@@ -118,7 +106,6 @@ const user = result.user;
                 required
               />
 
-              {/* Photo URL */}
               <input
                 type="text"
                 placeholder="Photo URL"
@@ -127,7 +114,6 @@ const user = result.user;
                 className="input input-bordered w-full bg-[#3a826d] text-white"
               />
 
-              {/* Email */}
               <input
                 type="email"
                 placeholder="Email"
@@ -137,7 +123,6 @@ const user = result.user;
                 required
               />
 
-              {/* Password */}
               <input
                 type="password"
                 placeholder="Password (A-Z, a-z, 6+ chars)"
@@ -158,7 +143,6 @@ const user = result.user;
 
             <div className="divider">OR</div>
 
-            {/* Google Login */}
             <button onClick={handleGoogleLogin} className="btn btn-outline w-full">
               Continue with Google
             </button>

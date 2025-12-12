@@ -19,16 +19,17 @@ const Login = () => {
 
   const from = location.state?.from?.pathname || "/";
 
+  const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
+
   // Email/Password login
   const handleLogin = async (e) => {
     e.preventDefault();
     setLoading(true);
     try {
-      // Firebase login
       await signInUser(email, password);
 
       // Fetch JWT from backend
-      const { data } = await axios.get(`${process.env.REACT_APP_BACKEND_URL}/jwt`, {
+      const { data } = await axios.get(`${BACKEND_URL}/jwt`, {
         params: { email },
       });
 
@@ -51,16 +52,12 @@ const Login = () => {
       const result = await signInWithPopup(auth, provider);
       const user = result.user;
 
-      // Send user info to backend
-      const { data } = await axios.post(
-        `${process.env.REACT_APP_BACKEND_URL}/users/google-login`,
-        {
-          name: user.displayName,
-          email: user.email,
-          photoURL: user.photoURL,
-          uid: user.uid,
-        }
-      );
+      const { data } = await axios.post(`${BACKEND_URL}/users/google-login`, {
+        name: user.displayName,
+        email: user.email,
+        photoURL: user.photoURL,
+        uid: user.uid,
+      });
 
       localStorage.setItem("accessToken", data.token);
       toast.success("Google login successful!");
