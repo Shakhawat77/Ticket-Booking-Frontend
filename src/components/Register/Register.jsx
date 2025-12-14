@@ -1,7 +1,11 @@
 import React, { useState } from "react";
 import { useAuth } from "../../context/AuthProvider.jsx";
 import { useNavigate, Link, useLocation } from "react-router";
-import { GoogleAuthProvider, signInWithPopup, updateProfile } from "firebase/auth";
+import {
+  GoogleAuthProvider,
+  signInWithPopup,
+  updateProfile,
+} from "firebase/auth";
 import { auth, db } from "../../firebase/firebase.init";
 import toast, { Toaster } from "react-hot-toast";
 import { doc, setDoc } from "firebase/firestore";
@@ -25,49 +29,41 @@ const Register = () => {
     const minLength = password.length >= 6;
     return uppercase && lowercase && minLength;
   };
-
   const handleRegister = async (e) => {
     e.preventDefault();
 
     if (!validatePassword(password)) {
-      toast.error("Password must include uppercase, lowercase & min 6 characters.");
+      toast.error(
+        "Password must include uppercase, lowercase & min 6 characters."
+      );
       return;
     }
 
     setLoading(true);
 
     try {
-      // 1️⃣ Create user in Firebase and MongoDB
-      const result = await createUser(email, password, name);
+      const result = await createUser(email, password);
       const user = result.user;
 
-      // 2️⃣ Update Firebase profile
       await updateProfile(user, {
         displayName: name,
         photoURL: photoURL || null,
       });
-
-      // 3️⃣ Save default role in Firestore
+      
+      toast.success("Registration successful!");
+      setLoading(false); // ← important
+      navigate(from, { replace: true });
       await setDoc(doc(db, "users", user.uid), {
         email: user.email,
         role: "USER",
       });
-
-      // 4️⃣ Clear all fields
-      setName("");
-      setPhotoURL("");
-      setEmail("");
-      setPassword("");
-
-      toast.success("Registration successful!");
-      navigate(from, { replace: true }); // navigate to home or previous page
-
+      
     } catch (error) {
-      console.error("Registration error:", error.response?.data || error.message);
-      toast.error(error.response?.data?.message || error.message);
-    } finally {
+      console.error(error);
+      toast.error(error.message);
       setLoading(false);
     }
+    // setLoading(false)
   };
 
   // Google login
@@ -90,13 +86,14 @@ const Register = () => {
       <div className="hero-content flex-col lg:flex-row-reverse">
         <div className="text-center lg:text-left">
           <h1 className="text-5xl font-bold">Register now!</h1>
-          <p className="py-6">Create your account to access TicketBari services.</p>
+          <p className="py-6">
+            Create your account to access TicketBari services.
+          </p>
         </div>
 
         <div className="card bg-gradient-to-r from-[#47aa8e] to-[#6497a8] w-full max-w-sm shadow-2xl">
           <div className="card-body">
             <form onSubmit={handleRegister} className="space-y-4">
-
               <input
                 type="text"
                 placeholder="Full Name"
@@ -143,7 +140,10 @@ const Register = () => {
 
             <div className="divider">OR</div>
 
-            <button onClick={handleGoogleLogin} className="btn btn-outline w-full">
+            <button
+              onClick={handleGoogleLogin}
+              className="btn btn-outline w-full"
+            >
               Continue with Google
             </button>
 
@@ -153,7 +153,6 @@ const Register = () => {
                 Login
               </Link>
             </p>
-
           </div>
         </div>
       </div>

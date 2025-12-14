@@ -79,6 +79,7 @@ const TicketDetails = () => {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(bookingData),
       });
+      console.log(res);
 
       if (!res.ok) throw new Error("Booking failed");
 

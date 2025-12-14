@@ -7,11 +7,12 @@ const MyBookings = () => {
   const { user } = useContext(AuthContext);
   const [bookings, setBookings] = useState([]);
   const [loading, setLoading] = useState(true);
+const backendUrl = import.meta.env.VITE_BACKEND_URL;
 
   useEffect(() => {
     if (!user?.email) return;
 
-    fetch(`http://localhost:3000/bookings?userEmail=${user.email}`)
+    fetch(`${backendUrl}/bookings?userEmail=${user.email}`)
       .then((res) => res.json())
       .then((data) => {
         setBookings(data);

@@ -52,7 +52,7 @@ const AuthProvider = ({ children }) => {
 
       // Fetch JWT AFTER backend user is created
       await fetchToken(newUser.email);
-
+setLoading(false)
       return userCredential;
     } catch (error) {
       console.error("User creation failed:", error);

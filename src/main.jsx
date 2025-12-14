@@ -31,94 +31,84 @@ import VendorProfile from "./components/DashBoard/Vendor/VendorProfile.jsx";
 // User Dashboard
 import UserDashboard from "./components/DashBoard/User/UserDashboard.jsx";
 import MyBookings from "./components/DashBoard/User/MyBookings.jsx";
+import DashBoard from "./components/DashBoard/DashBoard.jsx";
+import RoleRoute from "./components/RoleRoute/RoleRoute.jsx";
+import TransactionHistory from "./components/DashBoard/User/TransactionHistory.jsx";
+import UserProfile from "./components/DashBoard/User/UserProfile.jsx";
 import TicketDetails from "./components/DashBoard/User/TicketDetails.jsx";
-
 const router = createBrowserRouter([
   {
     path: "/",
     element: <RootLayout />,
     children: [
+      
       { index: true, element: <Home /> },
       { path: "register", element: <Register /> },
       { path: "login", element: <Login /> },
+      {path: "AllTickets", element: <AllTicket></AllTicket>},
+    {path: "AllTickets/:id", element: <TicketDetails></TicketDetails>}, 
+    ],
+  },
 
-      // Dashboard base route
+
+  {
+    path: "/dashboard",
+    element: <DashboardLayout />,
+    children: [
       {
-        path: "dashboard",
+        index: true,
+        element: <DashBoard />,
+      },
+
+     {
+  path: "user",
+  element: (
+    <RoleRoute allowedRoles={["USER"]}>
+      <UserDashboard />
+    </RoleRoute>
+  ),
+  children: [
+
+    { path: "profile", element: <UserProfile /> },
+    { path: "bookings", element: <MyBookings /> },
+    { path: "transactions", element: <TransactionHistory /> },
+  ],
+},
+
+      {
+        path: "vendor",
         element: (
-          <PrivateRoute>
-            <DashboardLayout />
-          </PrivateRoute>
+          <RoleRoute allowedRoles={["VENDOR"]}>
+            <VendorDashboard />
+          </RoleRoute>
         ),
         children: [
-          // Admin routes
-          {
-            path: "admin",
-            element: (
-              <PrivateRoute allowedRoles={["ADMIN"]}>
-                <AdminDashboard />
-              </PrivateRoute>
-            ),
-            children: [
-              { path: "profile", element: <AdminProfile /> },
-              { path: "tickets", element: <ManageTickets /> },
-              { path: "users", element: <ManageUsers /> },
-              { path: "advertise", element: <AdvertiseTickets /> },
-            ],
-          },
-
-          // Vendor routes
-          {
-            path: "vendor",
-            element: (
-              <PrivateRoute allowedRoles={["VENDOR"]}>
-                <VendorDashboard />
-              </PrivateRoute>
-            ),
-            children: [
-              { path: "profile", element: <VendorProfile /> },
-              { path: "addTicket", element: <AddTicket /> },
-              { path: "myTickets", element: <MyAddedTickets /> },
-              { path: "requests", element: <RequestedBookings /> },
-              { path: "revenue", element: <RevenueOverview /> },
-            ],
-          },
-
-          // User routes
-          {
-            path: "user",
-            element: (
-              <PrivateRoute allowedRoles={["USER"]}>
-                <UserDashboard />
-              </PrivateRoute>
-            ),
-            children: [
-              { path: "myBookings", element: <MyBookings /> },
-            ],
-          },
+          { path: "profile", element: <VendorProfile /> },
+          { path: "add-ticket", element: <AddTicket /> },
+          { path: "my-tickets", element: <MyAddedTickets /> },
+          { path: "bookings", element: <RequestedBookings /> },
+          { path: "revenue", element: <RevenueOverview /> },
         ],
       },
 
-      // Tickets list & details
+
       {
-        path: "allTickets",
+        path: "admin",
         element: (
-          <PrivateRoute>
-            <AllTicket />
-          </PrivateRoute>
+          <RoleRoute allowedRoles={["ADMIN"]}>
+            <AdminDashboard />
+          </RoleRoute>
         ),
-      },
-      {
-        path: "allTickets/:id",
-        element: (
-          <PrivateRoute>
-            <TicketDetails />
-          </PrivateRoute>
-        ),
+         children: [
+    { path: "profile", element: <AdminProfile /> },
+    { path: "manage-tickets", element: <ManageTickets /> },
+    { path: "manage-users", element: <ManageUsers /> },
+    { path: "advertise", element: <AdvertiseTickets /> },
+  ],
       },
 
-      { path: "*", element: <ErrorPage /> },
     ],
+    
   },
 ]);
 
