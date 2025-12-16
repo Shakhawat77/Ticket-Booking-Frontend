@@ -18,41 +18,42 @@ const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
   const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 
-  // Fetch JWT token safely
+  // ------------------- JWT Token -------------------
   const fetchToken = async (email) => {
     try {
-      const { data } = await axios.get(`${BACKEND_URL}/jwt`, {
-        params: { email },
-      });
+      const { data } = await axios.get(`${BACKEND_URL}/jwt`, { params: { email } });
       if (data?.token) {
         localStorage.setItem("accessToken", data.token);
+        return data.token;
       } else {
         console.warn("JWT token not returned from backend");
         localStorage.removeItem("accessToken");
+        return null;
       }
     } catch (err) {
       console.error("Error fetching token:", err.response?.data || err.message);
       localStorage.removeItem("accessToken");
-      throw err;
+      return null;
     }
   };
 
-  // ------------------- Authentication Functions -------------------
+  // ------------------- Authentication -------------------
   const createUser = async (email, password, name) => {
     setLoading(true);
     try {
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
       const newUser = userCredential.user;
 
-      // Create user record in MongoDB
+      // Create user in backend
       await axios.post(`${BACKEND_URL}/users`, {
         name: name || newUser.displayName || "New User",
         email: newUser.email,
       });
 
-      // Fetch JWT AFTER backend user is created
+      // Fetch JWT
       await fetchToken(newUser.email);
-setLoading(false)
+
+      setUser(newUser);
       return userCredential;
     } catch (error) {
       console.error("User creation failed:", error);
@@ -67,24 +68,16 @@ setLoading(false)
     setLoading(true);
     try {
       const userCredential = await signInWithEmailAndPassword(auth, email, password);
-      await fetchToken(userCredential.user.email);
+
+      const token = await fetchToken(userCredential.user.email);
+      if (!token) throw new Error("Failed to get JWT token");
+
+      setUser(userCredential.user);
       return userCredential;
     } catch (error) {
       console.error("User sign-in failed:", error);
       localStorage.removeItem("accessToken");
       throw error;
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const logOut = async () => {
-    setLoading(true);
-    try {
-      await signOut(auth);
-      localStorage.removeItem("accessToken");
-    } catch (error) {
-      console.error("Logout failed:", error);
     } finally {
       setLoading(false);
     }
@@ -106,13 +99,29 @@ setLoading(false)
 
       if (data?.token) {
         localStorage.setItem("accessToken", data.token);
+        setUser(currentUser);
       } else {
         console.error("JWT token not returned after Google login");
         await signOut(auth);
+        setUser(null);
       }
     } catch (err) {
       console.error("Google login failed:", err.response?.data || err.message);
       await signOut(auth);
+      setUser(null);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const logOut = async () => {
+    setLoading(true);
+    try {
+      await signOut(auth);
+      localStorage.removeItem("accessToken");
+      setUser(null);
+    } catch (error) {
+      console.error("Logout failed:", error);
     } finally {
       setLoading(false);
     }
@@ -120,10 +129,14 @@ setLoading(false)
 
   // ------------------- Auth State Observer -------------------
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
-      setUser(currentUser);
+    const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
+      setUser(currentUser || null);
 
-      // Do NOT auto-fetch JWT here; registration or login flow already fetches it
+      // If user is logged in but no token, fetch it
+      if (currentUser && !localStorage.getItem("accessToken")) {
+        await fetchToken(currentUser.email);
+      }
+
       if (!currentUser) localStorage.removeItem("accessToken");
 
       setLoading(false);
@@ -133,12 +146,12 @@ setLoading(false)
   }, []);
 
   const authInfo = {
-    createUser,
-    signInUser,
-    logOut,
-    googleLogin,
     user,
     loading,
+    createUser,
+    signInUser,
+    googleLogin,
+    logOut,
   };
 
   return <AuthContext.Provider value={authInfo}>{children}</AuthContext.Provider>;

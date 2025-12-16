@@ -21,8 +21,8 @@ const VendorProfile = () => {
   }
 
   return (
-    <div className="bg-white p-6 rounded shadow-md max-w-md mx-auto">
-      <h2 className="text-2xl font-bold mb-4">Vendor Profile</h2>
+    <div className="bg-white p-6 rounded shadow-md max-w-md mx-auto ">
+      <h2 className="text-2xl text-center font-bold mb-4">Vendor Profile</h2>
       <div className="flex flex-col items-center gap-4">
         {user.photoURL ? (
           <img

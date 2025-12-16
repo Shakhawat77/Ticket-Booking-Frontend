@@ -1,27 +1,48 @@
 import React, { useEffect, useState, useContext } from "react";
 import { AuthContext } from "../../../context/AuthProvider";
+import axios from "axios";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from "recharts";
 
 const RevenueOverview = () => {
   const { user } = useContext(AuthContext);
   const [tickets, setTickets] = useState([]);
   const [bookings, setBookings] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   const backendUrl = import.meta.env.VITE_BACKEND_URL;
 
   useEffect(() => {
     if (!user?.email) return;
 
-    fetch(`${backendUrl}/tickets?vendorEmail=${user.email}`)
-      .then(res => res.json())
-      .then(setTickets)
-      .catch(console.error);
+    const token = localStorage.getItem("accessToken");
+    if (!token) return;
 
-    fetch(`${backendUrl}/bookings?vendorEmail=${user.email}&status=paid`)
-      .then(res => res.json())
-      .then(setBookings)
-      .catch(console.error);
+    const fetchData = async () => {
+      setLoading(true);
+      try {
+        // Fetch tickets for vendor
+        const ticketsRes = await axios.get(`${backendUrl}/vendor/tickets`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        setTickets(ticketsRes.data);
+
+        // Fetch bookings for vendor and filter paid
+        const bookingsRes = await axios.get(`${backendUrl}/bookings/vendor`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        const paidBookings = bookingsRes.data.filter(b => b.status === "paid");
+        setBookings(paidBookings);
+      } catch (err) {
+        console.error("Error fetching data:", err.response?.data || err.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
   }, [user?.email, backendUrl]);
+
+  if (loading) return <div>Loading revenue data...</div>;
 
   const totalRevenue = bookings.reduce((sum, b) => sum + Number(b.totalPrice || 0), 0);
   const totalTicketsSold = bookings.reduce((sum, b) => sum + Number(b.quantity || 0), 0);
@@ -31,7 +52,10 @@ const RevenueOverview = () => {
     const sold = bookings
       .filter(b => b.ticketId === t._id)
       .reduce((sum, b) => sum + Number(b.quantity || 0), 0);
-    return { name: t.title, sold };
+    const revenue = bookings
+      .filter(b => b.ticketId === t._id)
+      .reduce((sum, b) => sum + Number(b.totalPrice || 0), 0);
+    return { name: t.title, sold, revenue };
   });
 
   return (
@@ -49,8 +73,9 @@ const RevenueOverview = () => {
           <BarChart data={chartData}>
             <XAxis dataKey="name" />
             <YAxis />
-            <Tooltip />
-            <Bar dataKey="sold" fill="#8884d8" />
+            <Tooltip formatter={(value, name) => (name === "revenue" ? `$${value}` : value)} />
+            <Bar dataKey="sold" fill="#8884d8" name="Tickets Sold" />
+            <Bar dataKey="revenue" fill="#82ca9d" name="Revenue" />
           </BarChart>
         </ResponsiveContainer>
       </div>

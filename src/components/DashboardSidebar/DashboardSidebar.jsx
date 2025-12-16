@@ -1,9 +1,12 @@
 import { Link } from "react-router";
-import { useAuth } from "../../context/AuthProvider";
 import { useUserRole } from "../../Hook/useUserRole";
 
 const DashboardSidebar = () => {
-  const role = useUserRole();
+  const { role, loading } = useUserRole(); // destructure role and loading
+
+  if (loading) return <div>Loading...</div>; // optional loading state
+
+  console.log(role); // logs the actual role
 
   return (
     <ul className="menu p-4 w-64 bg-base-100">
@@ -12,11 +15,9 @@ const DashboardSidebar = () => {
           <li>
             <Link to="/dashboard/user/profile">User Profile</Link>
           </li>
-
           <li>
             <Link to="/dashboard/user/bookings">My Booked Tickets</Link>
           </li>
-
           <li>
             <Link to="/dashboard/user/transactions">Transaction History</Link>
           </li>
@@ -44,26 +45,23 @@ const DashboardSidebar = () => {
       )}
 
       {role === "ADMIN" && (
-       <>
-  <li>
-    <Link to="/dashboard/admin/profile">Admin Profile</Link>
-  </li>
-
-  <li>
-    <Link to="/dashboard/admin/manage-tickets">Manage Tickets</Link>
-  </li>
-
-  <li>
-    <Link to="/dashboard/admin/manage-users">Manage Users</Link>
-  </li>
-
-  <li>
-    <Link to="/dashboard/admin/advertise">Advertise Tickets</Link>
-  </li>
-</>
-
+        <>
+          <li>
+            <Link to="/dashboard/admin/profile">Admin Profile</Link>
+          </li>
+          <li>
+            <Link to="/dashboard/admin/manage-tickets">Manage Tickets</Link>
+          </li>
+          <li>
+            <Link to="/dashboard/admin/manage-users">Manage Users</Link>
+          </li>
+          <li>
+            <Link to="/dashboard/admin/advertise">Advertise Tickets</Link>
+          </li>
+        </>
       )}
     </ul>
   );
 };
+
 export default DashboardSidebar;
