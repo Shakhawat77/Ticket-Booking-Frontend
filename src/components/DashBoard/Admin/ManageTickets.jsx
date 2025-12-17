@@ -4,85 +4,116 @@ import toast, { Toaster } from "react-hot-toast";
 const ManageTickets = () => {
   const [tickets, setTickets] = useState([]);
   const [loading, setLoading] = useState(true);
+
   const backendUrl = import.meta.env.VITE_BACKEND_URL;
+  const token = localStorage.getItem("accessToken");
 
-  // Fetch tickets
+  /* ---------------- FETCH ALL TICKETS (ADMIN) ---------------- */
   useEffect(() => {
-    fetch(`${backendUrl}/tickets`)
-      .then((res) => res.json())
-      .then((data) => {
-        setTickets(data);
-        setLoading(false);
-      })
-      .catch((err) => {
-        console.error(err);
-        setLoading(false);
-        toast.error("Failed to load tickets");
-      });
-  }, [backendUrl]);
+    if (!token) return;
 
-  // Update ticket status
-  const updateStatus = async (_id, status) => {
+    const fetchTickets = async () => {
+      try {
+        const res = await fetch(`${backendUrl}/admin/tickets`, {
+          headers: {
+            authorization: `Bearer ${token}`,
+          },
+        });
+
+        if (!res.ok) throw new Error("Failed to fetch tickets");
+
+        const data = await res.json();
+        setTickets(data);
+      } catch (err) {
+        console.error(err);
+        toast.error("Failed to load tickets");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchTickets();
+  }, [backendUrl, token]);
+
+  /* ---------------- APPROVE / REJECT TICKET ---------------- */
+  const updateStatus = async (id, status) => {
     try {
-      const res = await fetch(`${backendUrl}/tickets/${_id}`, {
+      const res = await fetch(`${backendUrl}/admin/tickets/${id}`, {
         method: "PATCH",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          authorization: `Bearer ${token}`,
+        },
         body: JSON.stringify({ verificationStatus: status }),
       });
-      if (!res.ok) throw new Error("Failed to update ticket");
-      setTickets(
-        tickets.map((t) =>
-          t._id === _id ? { ...t, verificationStatus: status } : t
+
+      if (!res.ok) throw new Error("Update failed");
+
+      setTickets((prev) =>
+        prev.map((t) =>
+          t._id === id ? { ...t, verificationStatus: status } : t
         )
       );
+
       toast.success(`Ticket ${status}`);
     } catch (err) {
       console.error(err);
-      toast.error(err.message || "Failed to update ticket");
+      toast.error("Failed to update ticket");
     }
   };
 
-  if (loading) return <p className="text-center mt-6">Loading tickets...</p>;
+  if (loading) {
+    return <p className="text-center mt-6">Loading tickets...</p>;
+  }
 
   return (
-    <div className="p-4">
+    <div className="p-6">
       <Toaster />
       <h2 className="text-2xl font-bold mb-4">Manage Tickets</h2>
-      <table className="table-auto w-full border">
-        <thead>
-          <tr className="bg-gray-200">
-            <th className="border px-2 py-1">Title</th>
-            <th className="border px-2 py-1">Vendor</th>
-            <th className="border px-2 py-1">Price</th>
-            <th className="border px-2 py-1">Status</th>
-            <th className="border px-2 py-1">Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          {tickets.map((ticket) => (
-            <tr key={ticket._id}>
-              <td className="border px-2 py-1">{ticket.title}</td>
-              <td className="border px-2 py-1">{ticket.vendorName}</td>
-              <td className="border px-2 py-1">${ticket.price}</td>
-              <td className="border px-2 py-1">{ticket.verificationStatus}</td>
-              <td className="border px-2 py-1 flex gap-2 flex-wrap">
-                <button
-                  className="btn btn-sm btn-primary"
-                  onClick={() => updateStatus(ticket._id, "approved")}
-                >
-                  Approve
-                </button>
-                <button
-                  className="btn btn-sm btn-red-500"
-                  onClick={() => updateStatus(ticket._id, "rejected")}
-                >
-                  Reject
-                </button>
-              </td>
+
+      <div className="overflow-x-auto">
+        <table className="table-auto w-full border">
+          <thead>
+            <tr className="bg-gray-200">
+              <th className="border px-3 py-2">Title</th>
+              <th className="border px-3 py-2">Vendor Email</th>
+              <th className="border px-3 py-2">Price</th>
+              <th className="border px-3 py-2">Status</th>
+              <th className="border px-3 py-2">Actions</th>
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+
+          <tbody>
+            {tickets.map((ticket) => (
+              <tr key={ticket._id}>
+                <td className="border px-3 py-2">{ticket.title}</td>
+                <td className="border px-3 py-2">{ticket.vendorEmail}</td>
+                <td className="border px-3 py-2">${ticket.price}</td>
+                <td className="border px-3 py-2 capitalize">
+                  {ticket.verificationStatus}
+                </td>
+                <td className="border px-3 py-2 flex gap-2">
+                  <button
+                    disabled={ticket.verificationStatus === "approved"}
+                    onClick={() => updateStatus(ticket._id, "approved")}
+                    className="px-3 py-1 bg-green-600 text-white rounded disabled:opacity-40"
+                  >
+                    Approve
+                  </button>
+
+                  <button
+                    disabled={ticket.verificationStatus === "rejected"}
+                    onClick={() => updateStatus(ticket._id, "rejected")}
+                    className="px-3 py-1 bg-red-600 text-white rounded disabled:opacity-40"
+                  >
+                    Reject
+                  </button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
     </div>
   );
 };

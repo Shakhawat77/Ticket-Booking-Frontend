@@ -1,28 +1,26 @@
 import React, { useEffect, useState } from "react";
-import { Link } from "react-router-dom"; // <-- fixed
+import { Link } from "react-router-dom";
 
 const Home = () => {
   const [advertisedTickets, setAdvertisedTickets] = useState([]);
-  const [latestTickets, setLatestTickets] = useState([]);
+  const [loading, setLoading] = useState(true);
 
-  // Fetch tickets from backend
   useEffect(() => {
-    // Advertisement tickets (approved & advertised)
-    fetch("http://localhost:3000/tickets?advertised=true")
-      .then((res) => res.json())
-      .then((data) => setAdvertisedTickets(data))
-      .catch((err) => console.error("Error fetching advertised tickets:", err));
+    const fetchAdvertisedTickets = async () => {
+      try {
+        const res = await fetch("http://localhost:3000/tickets?advertised=true");
+        if (!res.ok) throw new Error("Failed to fetch advertised tickets");
 
-    // Latest tickets (recently added)
-    fetch("http://localhost:3000/tickets")
-      .then((res) => res.json())
-      .then((data) => {
-        const sorted = data
-          .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
-          .slice(0, 8); // last 6-8 tickets
-        setLatestTickets(sorted);
-      })
-      .catch((err) => console.error("Error fetching latest tickets:", err));
+        const data = await res.json();
+        setAdvertisedTickets(data);
+      } catch (err) {
+        console.error("Error fetching advertised tickets:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchAdvertisedTickets();
   }, []);
 
   const TicketCard = ({ ticket }) => (
@@ -47,13 +45,17 @@ const Home = () => {
           : "None"}
       </p>
       <Link
-        to={`/allTickets/${ticket._id}`} // <-- fixed route
+        to={`/allTickets/${ticket._id}`}
         className="mt-auto btn btn-sm bg-blue-600 text-white hover:bg-blue-700 mt-2"
       >
         See Details
       </Link>
     </div>
   );
+
+  if (loading) {
+    return <p className="text-center mt-6">Loading advertised tickets...</p>;
+  }
 
   return (
     <div className="space-y-12 px-4 md:px-8 lg:px-16 py-8">
@@ -63,44 +65,17 @@ const Home = () => {
       </div>
 
       {/* Advertisement Section */}
-      {advertisedTickets.length > 0 && (
-        <section>
-          <h2 className="text-2xl font-bold mb-4">Advertisement Tickets</h2>
+      <section>
+        <h2 className="text-2xl font-bold mb-4">Advertisement Tickets</h2>
+        {advertisedTickets.length > 0 ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
             {advertisedTickets.map((ticket) => (
               <TicketCard key={ticket._id} ticket={ticket} />
             ))}
           </div>
-        </section>
-      )}
-
-      {/* Latest Tickets Section */}
-      {latestTickets.length > 0 && (
-        <section>
-          <h2 className="text-2xl font-bold mb-4">Latest Tickets</h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-            {latestTickets.map((ticket) => (
-              <TicketCard key={ticket._id} ticket={ticket} />
-            ))}
-          </div>
-        </section>
-      )}
-
-      {/* Extra Section 1 */}
-      <section className="bg-gray-100 p-8 rounded">
-        <h2 className="text-2xl font-bold mb-4">Popular Routes</h2>
-        <p>Check out the most popular travel routes chosen by our customers!</p>
-      </section>
-
-      {/* Extra Section 2 */}
-      <section className="bg-gray-200 p-8 rounded">
-        <h2 className="text-2xl font-bold mb-4">Why Choose Us?</h2>
-        <ul className="list-disc pl-5 space-y-1">
-          <li>Easy and fast booking process</li>
-          <li>Trusted and verified vendors</li>
-          <li>Secure payment with Stripe</li>
-          <li>Best prices guaranteed</li>
-        </ul>
+        ) : (
+          <p>No advertised tickets available at the moment.</p>
+        )}
       </section>
     </div>
   );

@@ -1,87 +1,140 @@
+import { useEffect, useState } from "react";
+import toast, { Toaster } from "react-hot-toast";
 
-import  { useEffect, useState } from "react";
-import toast from "react-hot-toast";
-import AdvertiseToggle from "../../Components/AdvertiseToggle";
-
-const AllTickets = () => {
+const AdvertiseTickets = () => {
   const [tickets, setTickets] = useState([]);
   const [loading, setLoading] = useState(true);
-  console.log(tickets);
+  const backendUrl = import.meta.env.VITE_BACKEND_URL;
+  const token = localStorage.getItem("accessToken");
 
-  const fetchTickets = async () => {
-    setLoading(true);
+  /* ---------------- FETCH ALL TICKETS (ADMIN) ---------------- */
+  useEffect(() => {
+    if (!token) return;
+
+    const fetchTickets = async () => {
+      setLoading(true);
+      try {
+        const res = await fetch(`${backendUrl}/admin/tickets`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+
+        if (!res.ok) throw new Error("Failed to fetch tickets");
+        const data = await res.json();
+
+        // Only show approved tickets for advertising
+        const approved = data.filter(t => t.verificationStatus === "approved");
+        setTickets(approved);
+      } catch (err) {
+        console.error(err);
+        toast.error(err.message || "Error loading tickets");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchTickets();
+  }, [backendUrl, token]);
+
+  /* ---------------- TOGGLE ADVERTISE ---------------- */
+  const toggleAdvertise = async (ticketId, currentStatus) => {
+    // Limit to 6 advertised tickets
+    const advertisedCount = tickets.filter(t => t.isAdvertised).length;
+    if (!currentStatus && advertisedCount >= 6) {
+      toast.error("Cannot advertise more than 6 tickets at a time");
+      return;
+    }
+
     try {
-      
-
-      const res = await fetch(`http://localhost:3000/allTickets`, {
+      const res = await fetch(`${backendUrl}/tickets/advertise/${ticketId}`, {
+        method: "PATCH",
         headers: {
           "Content-Type": "application/json",
-       
+          Authorization: `Bearer ${token}`,
         },
+        body: JSON.stringify({ isAdvertised: !currentStatus }),
       });
 
-      if (!res.ok) {
-        const errorData = await res.json();
-        throw new Error(errorData.message || "Failed to fetch tickets");
-      }
-
       const data = await res.json();
-      setTickets(data);
+      if (!res.ok) throw new Error(data.message);
+
+      setTickets(prev =>
+        prev.map(t => (t._id === ticketId ? { ...t, isAdvertised: !currentStatus } : t))
+      );
+
+      toast.success(!currentStatus ? "Ticket advertised" : "Advertisement removed");
     } catch (err) {
       console.error(err);
-      toast.error(err.message || "Error fetching tickets");
-    } finally {
-      setLoading(false);
+      toast.error(err.message || "Failed to update advertisement");
     }
   };
 
-  useEffect(() => {
-    fetchTickets();
-  }, []);
-
-  if (loading) return <p>Loading tickets...</p>;
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center h-60">
+        <span className="loading loading-spinner loading-lg"></span>
+      </div>
+    );
+  }
 
   return (
-    <div className="overflow-x-auto">
-      <table className="table-auto w-full border-collapse border border-gray-300">
-        <thead>
-          <tr className="bg-gray-200">
-            <th className="border px-4 py-2">Serial No</th>
-            <th className="border px-4 py-2">Image</th>
-            <th className="border px-4 py-2">Ticket Name</th>
-            <th className="border px-4 py-2">Price</th>
-            <th className="border px-4 py-2">Date</th>
-            <th className="border px-4 py-2">Advertise</th>
-          </tr>
-        </thead>
-        <tbody>
-          {tickets.map((ticket,index) => (
-            <tr key={ticket._id} className="hover:bg-gray-100">
-              <td>{index+1}</td>
-              <td className="w-5 h-5 rounded-full"><img src={ticket.image} alt="" /></td>
-              <td className="border px-4 py-2">{ticket.title}</td>
-              <td className="border px-4 py-2">${ticket.price}</td>
-              <td className="border px-4 py-2">{new Date(ticket.date).toLocaleDateString()}</td>
-              
-              <td className="border px-4 py-2">
-                {/* Optional Advertise toggle */}
-                <AdvertiseToggle
-                  ticketId={ticket._id}
-                  isAdvertised={ticket.isAdvertised}
-                  onStatusChange={(id, newStatus) => {
-                    // Update local state
-                    setTickets((prev) =>
-                      prev.map((t) => (t._id === id ? { ...t, isAdvertised: newStatus } : t))
-                    );
-                  }}
-                />
-              </td>
+    <div className="p-6">
+      <Toaster />
+      <h2 className="text-2xl font-bold mb-4">Advertise Tickets</h2>
+
+      <div className="overflow-x-auto">
+        <table className="table-auto w-full border">
+          <thead>
+            <tr className="bg-gray-200">
+              <th className="border px-3 py-2">#</th>
+              <th className="border px-3 py-2">Image</th>
+              <th className="border px-3 py-2">Title</th>
+              <th className="border px-3 py-2">Price</th>
+              <th className="border px-3 py-2">Date</th>
+              <th className="border px-3 py-2">Advertise</th>
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+
+          <tbody>
+            {tickets.length === 0 && (
+              <tr>
+                <td colSpan="6" className="text-center py-6">
+                  No approved tickets found
+                </td>
+              </tr>
+            )}
+
+            {tickets.map((ticket, index) => (
+              <tr key={ticket._id} className="hover:bg-gray-100">
+                <td className="border px-3 py-2">{index + 1}</td>
+                <td className="border px-3 py-2">
+                  <img
+                    src={ticket.image}
+                    alt={ticket.title}
+                    className="w-12 h-12 rounded object-cover"
+                  />
+                </td>
+                <td className="border px-3 py-2">{ticket.title}</td>
+                <td className="border px-3 py-2">${ticket.price}</td>
+                <td className="border px-3 py-2">
+                  {new Date(ticket.date).toLocaleDateString()}
+                </td>
+                <td className="border px-3 py-2">
+                  <button
+                    onClick={() => toggleAdvertise(ticket._id, ticket.isAdvertised)}
+                    className={`px-3 py-1 rounded text-white ${
+                      ticket.isAdvertised ? "bg-red-600" : "bg-green-600"
+                    }`}
+                  >
+                    {ticket.isAdvertised ? "Unadvertise" : "Advertise"}
+                  </button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
     </div>
   );
 };
 
-export default AllTickets;
+export default AdvertiseTickets;
