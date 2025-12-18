@@ -1,9 +1,10 @@
-
+import { useAuth } from "../../context/AuthProvider";
 
 const DashBoard = () => {
+    const { user } = useAuth();
     return (
         <div>
-            <h2>this is main's DashBoard</h2>
+            <h2>Welcome to {user.displayName} </h2>
         </div>
     );
 };

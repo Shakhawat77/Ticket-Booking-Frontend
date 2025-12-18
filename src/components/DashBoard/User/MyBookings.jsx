@@ -23,8 +23,8 @@ const MyBookings = () => {
         Authorization: `Bearer ${token}`,
       },
     })
-      .then(res => res.json())
-      .then(data => {
+      .then((res) => res.json())
+      .then((data) => {
         setBookings(data);
         setLoading(false);
       })
@@ -46,6 +46,35 @@ const MyBookings = () => {
     return `${d}d ${h}h ${m}m`;
   };
 
+  /* ---------------- Stripe Payment Simulation ---------------- */
+  const handlePayNow = async (booking) => {
+    const token = localStorage.getItem("accessToken");
+    if (!token) return toast.error("Unauthorized");
+
+    try {
+      const res = await fetch(`${backendUrl}/bookings/pay/${booking._id}`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (!res.ok) throw new Error("Payment failed");
+
+      // Update local state to reflect 'paid'
+      setBookings((prev) =>
+        prev.map((b) =>
+          b._id === booking._id ? { ...b, status: "paid" } : b
+        )
+      );
+
+      toast.success("Payment successful! Booking is now PAID.");
+    } catch (err) {
+      toast.error(err.message);
+    }
+  };
+
   if (loading) return <p className="text-center mt-10">Loading...</p>;
 
   if (bookings.length === 0)
@@ -60,8 +89,7 @@ const MyBookings = () => {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {bookings.map((b) => {
           const departed = new Date(b.departureDateTime) < new Date();
-          const showPay =
-            b.status === "accepted" && !departed;
+          const showPay = b.status === "accepted" && !departed;
 
           return (
             <div key={b._id} className="border rounded shadow p-4 bg-white">
@@ -74,21 +102,28 @@ const MyBookings = () => {
               )}
 
               <h3 className="font-semibold text-lg">{b.ticketTitle}</h3>
-              <p className="text-sm">{b.from} → {b.to}</p>
+              <p className="text-sm">
+                {b.from} → {b.to}
+              </p>
 
               <p className="mt-1">
                 <b>Departure:</b>{" "}
                 {new Date(b.departureDateTime).toLocaleString()}
               </p>
 
+              {/* Countdown only if not rejected */}
               {b.status !== "rejected" && (
                 <p className="mt-1">
                   <b>Countdown:</b> {getCountdown(b.departureDateTime)}
                 </p>
               )}
 
-              <p className="mt-1"><b>Quantity:</b> {b.quantity}</p>
-              <p><b>Total:</b> ${b.totalPrice}</p>
+              <p className="mt-1">
+                <b>Quantity:</b> {b.quantity}
+              </p>
+              <p>
+                <b>Total:</b> ${b.totalPrice}
+              </p>
 
               <span
                 className={`inline-block mt-2 px-3 py-1 text-white rounded text-sm ${
@@ -107,7 +142,7 @@ const MyBookings = () => {
               {showPay && (
                 <button
                   className="mt-3 w-full bg-indigo-600 text-white py-2 rounded hover:bg-indigo-700"
-                  onClick={() => toast("Stripe payment coming next")}
+                  onClick={() => handlePayNow(b)}
                 >
                   Pay Now
                 </button>

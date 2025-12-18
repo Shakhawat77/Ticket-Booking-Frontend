@@ -16,7 +16,7 @@ const ManageTickets = () => {
       try {
         const res = await fetch(`${backendUrl}/admin/tickets`, {
           headers: {
-            authorization: `Bearer ${token}`,
+            Authorization: `Bearer ${token}`,
           },
         });
 
@@ -42,28 +42,34 @@ const ManageTickets = () => {
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",
-          authorization: `Bearer ${token}`,
+          Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({ verificationStatus: status }),
+        body: JSON.stringify({ status }), // <-- match backend field
       });
 
-      if (!res.ok) throw new Error("Update failed");
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.message || "Update failed");
 
+      // Update frontend state
       setTickets((prev) =>
         prev.map((t) =>
           t._id === id ? { ...t, verificationStatus: status } : t
         )
       );
 
-      toast.success(`Ticket ${status}`);
+      toast.success(data.message);
     } catch (err) {
       console.error(err);
-      toast.error("Failed to update ticket");
+      toast.error(err.message || "Failed to update ticket");
     }
   };
 
   if (loading) {
     return <p className="text-center mt-6">Loading tickets...</p>;
+  }
+
+  if (!tickets.length) {
+    return <p className="text-center mt-6">No tickets found.</p>;
   }
 
   return (

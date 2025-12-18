@@ -61,7 +61,7 @@ const Login = () => {
 
       localStorage.setItem("accessToken", data.token);
       toast.success("Google login successful!");
-      navigate(from, { replace: true });
+      navigate('/');
     } catch (error) {
       console.error(error);
       toast.error(error.response?.data?.message || error.message);

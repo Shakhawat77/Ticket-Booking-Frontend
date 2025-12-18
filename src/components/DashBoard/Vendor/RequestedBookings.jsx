@@ -38,21 +38,42 @@ const RequestedBookings = () => {
   }, [user, token]);
 
   // ---------------- ACCEPT / REJECT ----------------
-  const handleStatusChange = async (id, status) => {
+
+  // Accept with ticket quantity validation
+  const handleAcceptBooking = async (id) => {
     try {
-      const res = await fetch(
-        `${backendUrl}/bookings/${status}/${id}`,
-        {
-          method: "PATCH",
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
+      const res = await fetch(`${backendUrl}/bookings/accepted/${id}`, {
+        method: "PATCH",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
 
-      if (!res.ok) throw new Error("Update failed");
+      const data = await res.json();
 
-      toast.success(`Booking ${status}`);
+      if (!res.ok) throw new Error(data.message || "Failed to accept booking");
+
+      toast.success(data.message);
+      fetchBookings();
+    } catch (err) {
+      console.error(err);
+      toast.error(err.message);
+    }
+  };
+
+  // Reject booking
+  const handleRejectBooking = async (id) => {
+    try {
+      const res = await fetch(`${backendUrl}/bookings/rejected/${id}`, {
+        method: "PATCH",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (!res.ok) throw new Error("Failed to reject booking");
+
+      toast.success("Booking rejected");
       fetchBookings();
     } catch (err) {
       console.error(err);
@@ -88,24 +109,41 @@ const RequestedBookings = () => {
             {bookings.map((b) => (
               <tr key={b._id}>
                 <td className="border px-3 py-2">
-                  {b.userName}<br />
+                  {b.userName}
+                  <br />
                   <span className="text-xs text-gray-500">{b.userEmail}</span>
                 </td>
-                <td className="border px-3 py-2">{b.ticketTitle}</td>
+                <td className="border px-3 py-2 flex items-center gap-2">
+                  {b.ticketImage ? (
+                    <img
+                      src={b.ticketImage}
+                      alt={b.ticketTitle}
+                      className="w-16 h-16 object-cover rounded"
+                      onError={(e) => {
+                        e.target.onerror = null;
+                        e.target.src =
+                          "https://via.placeholder.com/64?text=No+Image";
+                      }}
+                    />
+                  ) : (
+                    <span>No Image</span>
+                  )}
+                  <span>{b.ticketTitle}</span>
+                </td>
                 <td className="border px-3 py-2">{b.quantity}</td>
                 <td className="border px-3 py-2">${b.totalPrice}</td>
                 <td className="border px-3 py-2 capitalize">{b.status}</td>
                 <td className="border px-3 py-2 flex gap-2">
                   <button
                     disabled={b.status !== "pending"}
-                    onClick={() => handleStatusChange(b._id, "accepted")}
+                    onClick={() => handleAcceptBooking(b._id)}
                     className="px-3 py-1 bg-green-600 text-white rounded disabled:opacity-40"
                   >
                     Accept
                   </button>
                   <button
                     disabled={b.status !== "pending"}
-                    onClick={() => handleStatusChange(b._id, "rejected")}
+                    onClick={() => handleRejectBooking(b._id)}
                     className="px-3 py-1 bg-red-600 text-white rounded disabled:opacity-40"
                   >
                     Reject

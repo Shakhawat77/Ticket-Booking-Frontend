@@ -1,23 +1,40 @@
 import React, { useEffect, useState } from "react";
-import {  useNavigate } from "react-router";
+import { useNavigate } from "react-router";
+import toast, { Toaster } from "react-hot-toast";
 
 const AllTicket = () => {
   const [tickets, setTickets] = useState([]);
   const [loading, setLoading] = useState(true);
- const navigate = useNavigate();
-  // Fetch admin-approved tickets
+  const navigate = useNavigate();
+
+  // Backend URL from .env
+  const backendUrl = import.meta.env.VITE_BACKEND_URL;
+  const token = localStorage.getItem("accessToken");
+
   useEffect(() => {
-    fetch("http://localhost:3000/tickets?verificationStatus=approved")
-      .then((res) => res.json())
-      .then((data) => {
+    const fetchTickets = async () => {
+      setLoading(true);
+      try {
+        const res = await fetch(`${backendUrl}/tickets?verificationStatus=approved`, {
+          headers: token
+            ? { Authorization: `Bearer ${token}` }
+            : {},
+        });
+
+        if (!res.ok) throw new Error("Failed to fetch tickets");
+
+        const data = await res.json();
         setTickets(data);
-        setLoading(false);
-      })
-      .catch((err) => {
+      } catch (err) {
         console.error(err);
+        toast.error(err.message || "Error loading tickets");
+      } finally {
         setLoading(false);
-      });
-  }, []);
+      }
+    };
+
+    fetchTickets();
+  }, [backendUrl, token]);
 
   if (loading) {
     return (
@@ -27,8 +44,17 @@ const AllTicket = () => {
     );
   }
 
+  if (!tickets.length) {
+    return (
+      <div className="flex justify-center items-center h-screen text-lg font-semibold text-gray-600">
+        No tickets available.
+      </div>
+    );
+  }
+
   return (
     <div className="px-4 md:px-8 lg:px-16 py-8 space-y-8">
+      <Toaster />
       <h1 className="text-4xl font-extrabold text-center text-blue-700 mb-8">
         All Tickets
       </h1>
@@ -64,7 +90,7 @@ const AllTicket = () => {
               </p>
 
               <div className="flex flex-wrap gap-2 my-2">
-                {ticket.perks.map((perk, idx) => (
+                {ticket.perks?.map((perk, idx) => (
                   <span
                     key={idx}
                     className="bg-blue-100 text-blue-800 text-xs font-semibold px-2 py-1 rounded-full"
@@ -78,12 +104,12 @@ const AllTicket = () => {
                 Departure: {new Date(ticket.departureDate).toLocaleString()}
               </p>
 
-                <button
-            onClick={() =>navigate(`/allTickets/${ticket._id}`)}
-            className="mt-2 px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700"
-          >
-            View Details
-          </button>
+              <button
+                onClick={() => navigate(`/allTickets/${ticket._id}`)}
+                className="mt-2 px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700"
+              >
+                View Details
+              </button>
             </div>
           </div>
         ))}

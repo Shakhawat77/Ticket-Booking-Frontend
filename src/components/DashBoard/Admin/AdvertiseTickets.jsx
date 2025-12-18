@@ -45,23 +45,22 @@ const AdvertiseTickets = () => {
     }
 
     try {
-      const res = await fetch(`${backendUrl}/tickets/advertise/${ticketId}`, {
+      const res = await fetch(`${backendUrl}/admin/tickets/advertise/${ticketId}`, {
         method: "PATCH",
         headers: {
-          "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({ isAdvertised: !currentStatus }),
       });
 
       const data = await res.json();
-      if (!res.ok) throw new Error(data.message);
+      if (!res.ok) throw new Error(data.message || "Failed to update advertisement");
 
+      // Update state
       setTickets(prev =>
-        prev.map(t => (t._id === ticketId ? { ...t, isAdvertised: !currentStatus } : t))
+        prev.map(t => (t._id === ticketId ? { ...t, isAdvertised: data.isAdvertised } : t))
       );
 
-      toast.success(!currentStatus ? "Ticket advertised" : "Advertisement removed");
+      toast.success(data.message);
     } catch (err) {
       console.error(err);
       toast.error(err.message || "Failed to update advertisement");
