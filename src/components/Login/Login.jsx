@@ -21,14 +21,12 @@ const Login = () => {
 
   const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 
-  // Email/Password login
   const handleLogin = async (e) => {
     e.preventDefault();
     setLoading(true);
     try {
       await signInUser(email, password);
 
-      // Fetch JWT from backend
       const { data } = await axios.get(`${BACKEND_URL}/jwt`, {
         params: { email },
       });
@@ -44,7 +42,6 @@ const Login = () => {
     }
   };
 
-  // Google login
   const handleGoogleLogin = async () => {
     const provider = new GoogleAuthProvider();
     setLoading(true);
@@ -70,7 +67,6 @@ const Login = () => {
     }
   };
 
-  // Reset password
   const handleResetPassword = async (e) => {
     e.preventDefault();
     if (!resetEmail) return toast.error("Please enter your email!");

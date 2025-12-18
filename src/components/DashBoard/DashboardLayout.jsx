@@ -5,6 +5,7 @@ import Footer from "../Footer/Footer";
 
 
 const DashboardLayout = () => {
+
   return (
     
   <div>
@@ -12,7 +13,7 @@ const DashboardLayout = () => {
       <div className="flex min-h-screen">
       
       <DashboardSidebar />
-      <main className="flex-1 p-6 bg-base-200">
+      <main className="flex-1 p-6 bg-green-300">
         <Outlet />
       </main>
     </div>

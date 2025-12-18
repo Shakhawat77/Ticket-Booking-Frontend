@@ -11,7 +11,7 @@ export function useUserRole() {
   useEffect(() => {
     if (!user?.email) return;
 
-    let isMounted = true; // flag to avoid state update after unmount
+    let isMounted = true; 
     const token = localStorage.getItem("accessToken");
 
     if (!token) {
@@ -32,7 +32,7 @@ export function useUserRole() {
         );
 
         if (isMounted) {
-          setRole(data?.role || null); // fallback to null if role missing
+          setRole(data?.role || null); 
         }
       } catch (err) {
         if (isMounted) setRole(null);
@@ -48,9 +48,9 @@ export function useUserRole() {
     fetchRole();
 
     return () => {
-      isMounted = false; // cleanup on unmount
+      isMounted = false; 
     };
-  }, [user?.email, BACKEND_URL]); // refetch if user email or backend URL changes
+  }, [user?.email, BACKEND_URL]); 
 
   return { role, loading };
 }

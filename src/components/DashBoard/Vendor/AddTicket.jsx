@@ -24,7 +24,6 @@ const AddTicket = () => {
     time: "",
   });
 
-  // ---------------- handlers ----------------
   const handleChange = (e) => {
     setTicketData({ ...ticketData, [e.target.name]: e.target.value });
   };
@@ -33,7 +32,6 @@ const AddTicket = () => {
     setPerks({ ...perks, [e.target.name]: e.target.checked });
   };
 
-  // ---------------- image upload ----------------
   const uploadImage = async (imageFile) => {
     try {
       const formData = new FormData();
@@ -52,7 +50,6 @@ const AddTicket = () => {
     }
   };
 
-  // ---------------- submit ----------------
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -67,7 +64,6 @@ const AddTicket = () => {
 
     const selectedPerks = Object.keys(perks).filter((key) => perks[key]);
 
-    // combine date & time
     const departureDateTime = new Date(
       `${ticketData.date}T${ticketData.time}`
     ).toISOString();
@@ -118,9 +114,8 @@ const AddTicket = () => {
     }
   };
 
-  // ---------------- UI ----------------
   return (
-    <div className="max-w-3xl mx-auto mt-10 p-6 bg-white rounded-lg shadow-lg">
+    <div className="max-w-3xl mx-auto mt-10 p-6 bg-gradient-to-br from-yellow-300 via-orange-400 to-green-500 rounded-lg shadow-lg">
       <Toaster />
 
       <h2 className="text-3xl font-bold mb-6 text-center text-blue-700">

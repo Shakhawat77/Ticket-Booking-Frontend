@@ -12,7 +12,6 @@ const MyAddedTickets = () => {
   const backendUrl = import.meta.env.VITE_BACKEND_URL;
   const token = localStorage.getItem("accessToken");
 
-  /* ---------------- FETCH VENDOR TICKETS ---------------- */
   useEffect(() => {
     if (!user || !token) return;
 
@@ -36,7 +35,6 @@ const MyAddedTickets = () => {
     fetchTickets();
   }, [user, backendUrl, token]);
 
-  /* ---------------- DELETE TICKET ---------------- */
   const handleDelete = async (id) => {
     if (!window.confirm("Are you sure you want to delete this ticket?")) return;
 
@@ -55,7 +53,6 @@ const MyAddedTickets = () => {
     }
   };
 
-  /* ---------------- UPDATE TICKET ---------------- */
   const handleUpdate = async (e) => {
     e.preventDefault();
 
@@ -97,7 +94,7 @@ const MyAddedTickets = () => {
           {tickets.map((ticket) => {
             const isRejected = ticket.verificationStatus === "rejected";
             return (
-              <div key={ticket._id} className="bg-white shadow p-4 rounded">
+              <div key={ticket._id} className="bg-gradient-to-br from-yellow-300 via-orange-400 to-green-500 shadow p-4 rounded">
                 <img
                   src={ticket.image}
                   alt={ticket.title}
@@ -152,7 +149,7 @@ const MyAddedTickets = () => {
         </div>
       )}
 
-      {/* ---------------- UPDATE MODAL ---------------- */}
+
       {isModalOpen && selectedTicket && (
         <div className="fixed inset-0 bg-gray-500 bg-opacity-40 flex items-center justify-center">
           <div className="bg-white p-6 rounded w-full max-w-md">

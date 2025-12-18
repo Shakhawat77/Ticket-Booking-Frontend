@@ -22,7 +22,6 @@ const Register = () => {
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
 
-  // Password validation
   const validatePassword = (password) => {
     const uppercase = /[A-Z]/.test(password);
     const lowercase = /[a-z]/.test(password);
@@ -51,7 +50,7 @@ const Register = () => {
       });
       
       toast.success("Registration successful!");
-      setLoading(false); // ← important
+      setLoading(false); 
       navigate(from, { replace: true });
       await setDoc(doc(db, "users", user.uid), {
         email: user.email,
@@ -63,10 +62,8 @@ const Register = () => {
       toast.error(error.message);
       setLoading(false);
     }
-    // setLoading(false)
   };
 
-  // Google login
   const handleGoogleLogin = async () => {
     const provider = new GoogleAuthProvider();
     try {

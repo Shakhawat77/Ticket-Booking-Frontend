@@ -18,7 +18,6 @@ const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
   const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 
-  // ------------------- JWT Token -------------------
   const fetchToken = async (email) => {
     try {
       const { data } = await axios.get(`${BACKEND_URL}/jwt`, { params: { email } });
@@ -37,20 +36,17 @@ const AuthProvider = ({ children }) => {
     }
   };
 
-  // ------------------- Authentication -------------------
   const createUser = async (email, password, name) => {
     setLoading(true);
     try {
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
       const newUser = userCredential.user;
 
-      // Create user in backend
       await axios.post(`${BACKEND_URL}/users`, {
         name: name || newUser.displayName || "New User",
         email: newUser.email,
       });
 
-      // Fetch JWT
       await fetchToken(newUser.email);
 
       setUser(newUser);
@@ -127,12 +123,10 @@ const AuthProvider = ({ children }) => {
     }
   };
 
-  // ------------------- Auth State Observer -------------------
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
       setUser(currentUser || null);
 
-      // If user is logged in but no token, fetch it
       if (currentUser && !localStorage.getItem("accessToken")) {
         await fetchToken(currentUser.email);
       }

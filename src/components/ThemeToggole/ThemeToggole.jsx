@@ -7,11 +7,11 @@ const ThemeToggle = () => {
 
   useEffect(() => {
     if (darkMode) {
-      document.body.style.backgroundColor = "#1f2937"; // dark bg
-      document.body.style.color = "#f9fafb"; // light text
+      document.body.style.backgroundColor = "#1f2937"; 
+      document.body.style.color = "#f9fafb"; 
     } else {
-      document.body.style.backgroundColor = "#f9fafb"; // light bg
-      document.body.style.color = "#1f2937"; // dark text
+      document.body.style.backgroundColor = "#f9fafb";
+      document.body.style.color = "#1f2937"; 
     }
     localStorage.setItem("darkMode", darkMode);
   }, [darkMode]);

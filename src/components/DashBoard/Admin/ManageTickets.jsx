@@ -7,8 +7,6 @@ const ManageTickets = () => {
 
   const backendUrl = import.meta.env.VITE_BACKEND_URL;
   const token = localStorage.getItem("accessToken");
-
-  /* ---------------- FETCH ALL TICKETS (ADMIN) ---------------- */
   useEffect(() => {
     if (!token) return;
 
@@ -34,8 +32,6 @@ const ManageTickets = () => {
 
     fetchTickets();
   }, [backendUrl, token]);
-
-  /* ---------------- APPROVE / REJECT TICKET ---------------- */
   const updateStatus = async (id, status) => {
     try {
       const res = await fetch(`${backendUrl}/admin/tickets/${id}`, {
@@ -44,13 +40,11 @@ const ManageTickets = () => {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({ status }), // <-- match backend field
+        body: JSON.stringify({ status }),
       });
 
       const data = await res.json();
       if (!res.ok) throw new Error(data.message || "Update failed");
-
-      // Update frontend state
       setTickets((prev) =>
         prev.map((t) =>
           t._id === id ? { ...t, verificationStatus: status } : t

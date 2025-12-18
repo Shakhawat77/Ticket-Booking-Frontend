@@ -13,7 +13,6 @@ const TicketDetails = () => {
   const [timeLeft, setTimeLeft] = useState("");
   const [showModal, setShowModal] = useState(false);
 
-  /* ---------------- Fetch Ticket ---------------- */
   useEffect(() => {
     fetch(`${backendUrl}/tickets/${id}`)
       .then((res) => res.json())
@@ -21,7 +20,6 @@ const TicketDetails = () => {
       .catch(() => toast.error("Failed to load ticket"));
   }, [id, backendUrl]);
 
-  /* ---------------- Countdown ---------------- */
   useEffect(() => {
     if (!ticket) return;
 
@@ -46,7 +44,6 @@ const TicketDetails = () => {
     return () => clearInterval(interval);
   }, [ticket]);
 
-  /* ---------------- Booking ---------------- */
   const handleBooking = async () => {
     if (!user) return toast.error("Please login first");
 
@@ -86,19 +83,18 @@ const TicketDetails = () => {
     }
   };
 
-  if (!ticket) return <p className="text-center mt-20">Loading ticket...</p>;
+  if (!ticket) return <p className="text-center mt-20 h-full">Loading ticket...</p>;
 
   const departurePassed = new Date(ticket.departureDateTime) < new Date();
   const isDisabled = departurePassed || ticket.quantity === 0;
 
-  /* ---------------- UI ---------------- */
   return (
-    <div className="max-w-5xl mx-auto mt-10">
+    <div className="max-w-5xl mx-auto mt-10 ">
       <Toaster />
 
-      {/* Hero Image */}
+    
       {ticket.image && (
-        <div className="relative">
+        <div className="relative ">
           <img
             src={ticket.image}
             alt={ticket.title}
@@ -110,8 +106,7 @@ const TicketDetails = () => {
         </div>
       )}
 
-      {/* Details Card */}
-      <div className="bg-white shadow-lg rounded-xl p-6 mt-6 space-y-3">
+      <div className="bg-gradient-to-br from-yellow-300 via-orange-400 to-green-500 shadow-lg rounded-xl p-6 mt-6 space-y-3">
         <p><b>From:</b> {ticket.from} → <b>To:</b> {ticket.to}</p>
         <p><b>Transport:</b> {ticket.transportType}</p>
         <p><b>Price:</b> ${ticket.price} / ticket</p>
@@ -144,10 +139,9 @@ const TicketDetails = () => {
         )}
       </div>
 
-      {/* Booking Modal */}
       {showModal && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-xl p-6 w-96 shadow-lg">
+          <div className="bg-gradient-to-br from-yellow-300 via-orange-400 to-green-500 rounded-xl p-6 w-96 shadow-lg">
             <h3 className="text-xl font-semibold mb-4">Book Ticket</h3>
 
             <label className="block mb-2 font-medium">

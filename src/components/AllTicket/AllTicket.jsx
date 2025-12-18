@@ -6,8 +6,6 @@ const AllTicket = () => {
   const [tickets, setTickets] = useState([]);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
-
-  // Backend URL from .env
   const backendUrl = import.meta.env.VITE_BACKEND_URL;
   const token = localStorage.getItem("accessToken");
 
@@ -38,7 +36,7 @@ const AllTicket = () => {
 
   if (loading) {
     return (
-      <div className="flex justify-center items-center h-screen text-lg font-semibold text-gray-600">
+      <div className="bg-green-300 flex  justify-center items-center h-screen text-lg font-semibold text-gray-600">
         Loading tickets...
       </div>
     );
@@ -46,24 +44,24 @@ const AllTicket = () => {
 
   if (!tickets.length) {
     return (
-      <div className="flex justify-center items-center h-screen text-lg font-semibold text-gray-600">
+      <div className="bg-green-300 flex justify-center items-center h-screen text-lg font-semibold text-gray-600">
         No tickets available.
       </div>
     );
   }
 
   return (
-    <div className="px-4 md:px-8 lg:px-16 py-8 space-y-8">
+    <div className="bg-green-300 px-4 md:px-8 lg:px-16 py-8 space-y-8">
       <Toaster />
       <h1 className="text-4xl font-extrabold text-center text-blue-700 mb-8">
         All Tickets
       </h1>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8">
+      <div className=" grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8">
         {tickets.map((ticket) => (
           <div
             key={ticket._id}
-            className="bg-white shadow-lg rounded-xl overflow-hidden transform hover:-translate-y-2 hover:shadow-2xl transition duration-300 flex flex-col"
+            className="bg-gradient-to-br from-yellow-300 via-orange-400 to-green-500 shadow-lg rounded-xl overflow-hidden transform hover:-translate-y-2 hover:shadow-2xl transition duration-300 flex flex-col"
           >
             <img
               src={ticket.image}

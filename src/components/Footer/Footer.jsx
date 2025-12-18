@@ -3,7 +3,7 @@ import { FaFacebook, FaCcStripe } from "react-icons/fa";
 
 const Footer = () => {
   return (
-    <footer className="bg-gray-900 text-gray-300 pt-12 pb-6 mt-10">
+    <footer className="bg-green-600 text-gray-300 pt-12 pb-6">
       <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-10 px-6">
         <div>
           <h2 className="text-2xl font-bold text-white">TicketBari</h2>

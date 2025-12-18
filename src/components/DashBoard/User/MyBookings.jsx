@@ -8,7 +8,6 @@ const MyBookings = () => {
   const [loading, setLoading] = useState(true);
   const backendUrl = import.meta.env.VITE_BACKEND_URL;
 
-  /* ---------------- Fetch Bookings ---------------- */
   useEffect(() => {
     if (!user) return;
 
@@ -34,7 +33,6 @@ const MyBookings = () => {
       });
   }, [user, backendUrl]);
 
-  /* ---------------- Countdown Helper ---------------- */
   const getCountdown = (date) => {
     const diff = new Date(date) - new Date();
     if (diff <= 0) return "Departed";
@@ -46,7 +44,6 @@ const MyBookings = () => {
     return `${d}d ${h}h ${m}m`;
   };
 
-  /* ---------------- Stripe Payment Simulation ---------------- */
   const handlePayNow = async (booking) => {
     const token = localStorage.getItem("accessToken");
     if (!token) return toast.error("Unauthorized");
@@ -62,7 +59,6 @@ const MyBookings = () => {
 
       if (!res.ok) throw new Error("Payment failed");
 
-      // Update local state to reflect 'paid'
       setBookings((prev) =>
         prev.map((b) =>
           b._id === booking._id ? { ...b, status: "paid" } : b
@@ -80,7 +76,6 @@ const MyBookings = () => {
   if (bookings.length === 0)
     return <p className="text-center mt-10">No bookings found</p>;
 
-  /* ---------------- UI ---------------- */
   return (
     <div className="p-6">
       <Toaster />
@@ -111,7 +106,6 @@ const MyBookings = () => {
                 {new Date(b.departureDateTime).toLocaleString()}
               </p>
 
-              {/* Countdown only if not rejected */}
               {b.status !== "rejected" && (
                 <p className="mt-1">
                   <b>Countdown:</b> {getCountdown(b.departureDateTime)}

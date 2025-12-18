@@ -10,7 +10,6 @@ const RequestedBookings = () => {
   const backendUrl = import.meta.env.VITE_BACKEND_URL;
   const token = localStorage.getItem("accessToken");
 
-  // ---------------- FETCH BOOKINGS ----------------
   const fetchBookings = async () => {
     if (!user || !token) return;
 
@@ -37,9 +36,6 @@ const RequestedBookings = () => {
     fetchBookings();
   }, [user, token]);
 
-  // ---------------- ACCEPT / REJECT ----------------
-
-  // Accept with ticket quantity validation
   const handleAcceptBooking = async (id) => {
     try {
       const res = await fetch(`${backendUrl}/bookings/accepted/${id}`, {
@@ -61,7 +57,6 @@ const RequestedBookings = () => {
     }
   };
 
-  // Reject booking
   const handleRejectBooking = async (id) => {
     try {
       const res = await fetch(`${backendUrl}/bookings/rejected/${id}`, {

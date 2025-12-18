@@ -6,7 +6,7 @@ const VendorProfile = () => {
 
   if (loading) {
     return (
-      <div className="flex justify-center items-center h-32 text-lg font-semibold text-gray-600">
+      <div className="bg-green-300 flex justify-center items-center h-32 text-lg font-semibold text-gray-600">
         Loading profile...
       </div>
     );
@@ -14,14 +14,14 @@ const VendorProfile = () => {
 
   if (!user) {
     return (
-      <div className="flex justify-center items-center h-32 text-lg font-semibold text-gray-600">
+      <div className="bg-green-300 flex justify-center items-center h-32 text-lg font-semibold text-gray-600">
         No user data available.
       </div>
     );
   }
 
   return (
-    <div className="bg-white p-6 rounded shadow-md max-w-md mx-auto ">
+    <div className="bg-gradient-to-br from-yellow-300 via-orange-400 to-green-500 p-6 rounded shadow-md max-w-md mx-auto ">
       <h2 className="text-2xl text-center font-bold mb-4">Vendor Profile</h2>
       <div className="flex flex-col items-center gap-4">
         {user.photoURL ? (

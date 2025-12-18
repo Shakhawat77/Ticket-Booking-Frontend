@@ -2,14 +2,14 @@ import { Link } from "react-router";
 import { useUserRole } from "../../Hook/useUserRole";
 
 const DashboardSidebar = () => {
-  const { role, loading } = useUserRole(); // destructure role and loading
+  const { role, loading } = useUserRole(); 
 
-  if (loading) return <div>Loading...</div>; // optional loading state
+  if (loading) return <div>Loading...</div>; 
 
-  console.log(role); // logs the actual role
+  console.log(role); 
 
   return (
-    <ul className="menu p-4 w-64 bg-base-100">
+    <ul className="menu p-4 w-64 bg-gradient-to-br from-yellow-300 via-orange-400 to-green-500">
       {role === "USER" && (
         <>
           <li>

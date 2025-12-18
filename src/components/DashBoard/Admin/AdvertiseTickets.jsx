@@ -6,8 +6,6 @@ const AdvertiseTickets = () => {
   const [loading, setLoading] = useState(true);
   const backendUrl = import.meta.env.VITE_BACKEND_URL;
   const token = localStorage.getItem("accessToken");
-
-  /* ---------------- FETCH ALL TICKETS (ADMIN) ---------------- */
   useEffect(() => {
     if (!token) return;
 
@@ -19,9 +17,7 @@ const AdvertiseTickets = () => {
         });
 
         if (!res.ok) throw new Error("Failed to fetch tickets");
-        const data = await res.json();
-
-        // Only show approved tickets for advertising
+        const data = await res.json();g
         const approved = data.filter(t => t.verificationStatus === "approved");
         setTickets(approved);
       } catch (err) {
@@ -34,10 +30,8 @@ const AdvertiseTickets = () => {
 
     fetchTickets();
   }, [backendUrl, token]);
-
-  /* ---------------- TOGGLE ADVERTISE ---------------- */
   const toggleAdvertise = async (ticketId, currentStatus) => {
-    // Limit to 6 advertised tickets
+
     const advertisedCount = tickets.filter(t => t.isAdvertised).length;
     if (!currentStatus && advertisedCount >= 6) {
       toast.error("Cannot advertise more than 6 tickets at a time");
@@ -54,8 +48,6 @@ const AdvertiseTickets = () => {
 
       const data = await res.json();
       if (!res.ok) throw new Error(data.message || "Failed to update advertisement");
-
-      // Update state
       setTickets(prev =>
         prev.map(t => (t._id === ticketId ? { ...t, isAdvertised: data.isAdvertised } : t))
       );

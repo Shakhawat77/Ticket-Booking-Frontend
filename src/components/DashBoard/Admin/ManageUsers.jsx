@@ -7,7 +7,6 @@ const ManageUsers = () => {
   const backendUrl = import.meta.env.VITE_BACKEND_URL;
   const token = localStorage.getItem("accessToken");
 
-  /* ---------------- FETCH USERS (ADMIN) ---------------- */
   useEffect(() => {
     if (!token) return;
 
@@ -31,7 +30,6 @@ const ManageUsers = () => {
       });
   }, [backendUrl, token]);
 
-  /* ---------------- UPDATE ROLE ---------------- */
   const updateRole = async (id, role) => {
     try {
       const res = await fetch(`${backendUrl}/users/role/${id}`, {
@@ -55,8 +53,6 @@ const ManageUsers = () => {
       toast.error(err.message);
     }
   };
-
-  /* ---------------- MARK AS FRAUD ---------------- */
   const markFraud = async (id) => {
     try {
       const res = await fetch(`${backendUrl}/users/fraud/${id}`, {

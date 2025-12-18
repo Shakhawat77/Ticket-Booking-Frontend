@@ -6,18 +6,14 @@ const Home = () => {
   const [latestTickets, setLatestTickets] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  /* ---------------- FETCH DATA ---------------- */
   useEffect(() => {
     const fetchData = async () => {
       try {
-        // Advertised tickets (MAX 6 – admin controlled)
         const adRes = await fetch(
           "https://ticket-booking-backend.vercel.app/tickets?advertised=true"
         );
         const adData = await adRes.json();
         setAdvertisedTickets(adData.slice(0, 6));
-
-        // Latest tickets (6–8)
         const latestRes = await fetch("https://ticket-booking-backend.vercel.app/tickets");
         const latestData = await latestRes.json();
 
@@ -36,9 +32,8 @@ const Home = () => {
     fetchData();
   }, []);
 
-  /* ---------------- TICKET CARD ---------------- */
   const TicketCard = ({ ticket }) => (
-    <div className="bg-white shadow-md rounded-lg p-4 flex flex-col hover:shadow-xl transition">
+    <div className="bg-gradient-to-br from-yellow-300 via-orange-400 to-green-500 shadow-md rounded-lg p-4 flex flex-col hover:shadow-xl transition">
       <img
         src={ticket.image}
         alt={ticket.title}
@@ -69,7 +64,6 @@ const Home = () => {
     </div>
   );
 
-  /* ---------------- LOADING ---------------- */
   if (loading) {
     return (
       <div className="flex justify-center items-center h-64">
@@ -79,9 +73,8 @@ const Home = () => {
   }
 
   return (
-    <div className="space-y-16 px-4 md:px-10 py-8">
+    <div className="space-y-16 px-4 md:px-10 py-8 bg-green-400">
 
-      {/* ---------------- HERO / SLIDER ---------------- */}
       <section className="relative h-[350px] rounded-xl overflow-hidden bg-gradient-to-r from-blue-600 to-teal-500 flex items-center justify-center text-white">
         <div className="text-center space-y-4">
           <h1 className="text-4xl md:text-6xl font-bold">
@@ -99,7 +92,6 @@ const Home = () => {
         </div>
       </section>
 
-      {/* ---------------- ADVERTISEMENT SECTION ---------------- */}
       <section>
         <h2 className="text-2xl font-bold mb-6">
           Advertisement Tickets
@@ -116,7 +108,6 @@ const Home = () => {
         )}
       </section>
 
-      {/* ---------------- LATEST TICKETS ---------------- */}
       <section>
         <h2 className="text-2xl font-bold mb-6">
           Latest Tickets
@@ -129,16 +120,14 @@ const Home = () => {
         </div>
       </section>
 
-      {/* ---------------- EXTRA SECTION 1 ---------------- */}
-      <section className="bg-gray-100 p-8 rounded-xl">
+      <section className="bg-gradient-to-br from-yellow-300 via-orange-400 to-green-500 p-8 rounded-xl">
         <h2 className="text-2xl font-bold mb-3">Popular Routes</h2>
         <p className="text-gray-700">
           Dhaka → Chittagong • Dhaka → Cox’s Bazar • Dhaka → Sylhet
         </p>
       </section>
 
-      {/* ---------------- EXTRA SECTION 2 ---------------- */}
-      <section className="bg-gray-200 p-8 rounded-xl">
+      <section className="bg-gradient-to-br from-yellow-300 via-orange-400 to-green-500 p-8 rounded-xl">
         <h2 className="text-2xl font-bold mb-3">Why Choose Us?</h2>
         <ul className="list-disc pl-6 space-y-2 text-gray-700">
           <li>Verified vendors only</li>

@@ -38,18 +38,13 @@ const Navbar = () => {
 
   return (
     <div className="navbar shadow-md px-4 py-2 flex items-center justify-between bg-gradient-to-r from-[#89A8B2] to-[#266352] text-white relative">
-      {/* Left: Logo */}
       <div className="flex items-center gap-2">
         <FaBus size={24} />
         <NavLink to="/" className="font-bold text-xl">
           TicketBari
         </NavLink>
       </div>
-
-      {/* Center: Menu (desktop) */}
       <ul className="hidden lg:flex gap-6">{links}</ul>
-
-      {/* Right: User / Theme Toggle / Mobile */}
       <div className="flex items-center gap-4">
         <ThemeToggle />
 
@@ -92,7 +87,6 @@ const Navbar = () => {
           </div>
         )}
 
-        {/* Mobile Hamburger */}
         <div className="lg:hidden">
           <button onClick={() => setMenuOpen(!menuOpen)}>
             {menuOpen ? <FaTimes size={24} /> : <FaBars size={24} />}
@@ -100,7 +94,6 @@ const Navbar = () => {
         </div>
       </div>
 
-      {/* Mobile Menu */}
       {menuOpen && (
         <ul className="absolute top-full left-0 w-full bg-gray-700 text-white flex flex-col gap-4 p-4 lg:hidden">
           {links}

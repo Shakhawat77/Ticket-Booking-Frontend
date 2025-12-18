@@ -20,13 +20,11 @@ const RevenueOverview = () => {
     const fetchData = async () => {
       setLoading(true);
       try {
-        // Fetch tickets for vendor
         const ticketsRes = await axios.get(`${backendUrl}/vendor/tickets`, {
           headers: { Authorization: `Bearer ${token}` },
         });
         setTickets(ticketsRes.data);
 
-        // Fetch bookings for vendor and filter paid
         const bookingsRes = await axios.get(`${backendUrl}/bookings/vendor`, {
           headers: { Authorization: `Bearer ${token}` },
         });
