@@ -9,7 +9,7 @@ const AdvertiseToggle = ({ ticketId, isAdvertised, onStatusChange }) => {
     setLoading(true);
     try {
       // Replace backendUrl with your API endpoint
-      const res = await fetch(`http://localhost:3000/tickets/${ticketId}/advertise`, {
+      const res = await fetch(`https://ticket-booking-backend.vercel.app/tickets/${ticketId}/advertise`, {
         method: "PATCH", // or POST depending on your API
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ advertise: !advertised }),

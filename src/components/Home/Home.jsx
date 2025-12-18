@@ -12,13 +12,13 @@ const Home = () => {
       try {
         // Advertised tickets (MAX 6 – admin controlled)
         const adRes = await fetch(
-          "http://localhost:3000/tickets?advertised=true"
+          "https://ticket-booking-backend.vercel.app/tickets?advertised=true"
         );
         const adData = await adRes.json();
         setAdvertisedTickets(adData.slice(0, 6));
 
         // Latest tickets (6–8)
-        const latestRes = await fetch("http://localhost:3000/tickets");
+        const latestRes = await fetch("https://ticket-booking-backend.vercel.app/tickets");
         const latestData = await latestRes.json();
 
         const sorted = latestData

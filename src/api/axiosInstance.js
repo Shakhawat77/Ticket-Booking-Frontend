@@ -1,7 +1,7 @@
 // src/api/axiosInstance.js
 import axios from "axios";
 
-const API_BASE = "http://localhost:3000"; // backend URL
+const API_BASE = "https://ticket-booking-backend.vercel.app"; // backend URL
 
 const axiosInstance = axios.create({
   baseURL: API_BASE,
