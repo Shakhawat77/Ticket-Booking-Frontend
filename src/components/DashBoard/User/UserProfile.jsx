@@ -21,7 +21,7 @@ const userProfile = () => {
   }
 
   return (
-    <div className="bg-white p-6 rounded shadow-md max-w-md mx-auto">
+    <div className="bg-gradient-to-br from-yellow-300 via-orange-400 to-green-500 p-6 rounded shadow-md max-w-md mx-auto ">
       <h2 className="text-2xl font-bold mb-4">User Profile</h2>
       <div className="flex flex-col items-center gap-4">
         {user.photoURL ? (

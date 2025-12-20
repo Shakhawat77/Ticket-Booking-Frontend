@@ -17,7 +17,7 @@ const AdvertiseTickets = () => {
         });
 
         if (!res.ok) throw new Error("Failed to fetch tickets");
-        const data = await res.json();g
+        const data = await res.json();
         const approved = data.filter(t => t.verificationStatus === "approved");
         setTickets(approved);
       } catch (err) {

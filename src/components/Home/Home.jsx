@@ -1,7 +1,10 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useContext } from "react";
 import { Link } from "react-router-dom";
+import { AuthContext } from "../../context/AuthProvider";
 
 const Home = () => {
+  const { user } = useContext(AuthContext);
+
   const [advertisedTickets, setAdvertisedTickets] = useState([]);
   const [latestTickets, setLatestTickets] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -14,7 +17,10 @@ const Home = () => {
         );
         const adData = await adRes.json();
         setAdvertisedTickets(adData.slice(0, 6));
-        const latestRes = await fetch("https://ticket-booking-backend.vercel.app/tickets");
+
+        const latestRes = await fetch(
+          "https://ticket-booking-backend.vercel.app/tickets"
+        );
         const latestData = await latestRes.json();
 
         const sorted = latestData
@@ -74,7 +80,6 @@ const Home = () => {
 
   return (
     <div className="space-y-16 px-4 md:px-10 py-8 bg-green-400">
-
       <section className="relative h-[350px] rounded-xl overflow-hidden bg-gradient-to-r from-blue-600 to-teal-500 flex items-center justify-center text-white">
         <div className="text-center space-y-4">
           <h1 className="text-4xl md:text-6xl font-bold">
@@ -83,8 +88,9 @@ const Home = () => {
           <p className="text-lg md:text-xl">
             Trusted vendors • Secure booking • Best prices
           </p>
+
           <Link
-            to="/allTickets"
+            to={user ? "/allTickets" : "/login"}
             className="inline-block bg-white text-blue-600 px-6 py-3 rounded font-semibold hover:bg-gray-100"
           >
             Browse Tickets

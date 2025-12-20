@@ -2,10 +2,24 @@ import React, { useContext } from "react";
 import { AuthContext } from "../../../context/AuthProvider";
 
 const AdminProfile = () => {
-  const { user } = useContext(AuthContext);
+  const { user, loading } = useContext(AuthContext);
+ if (loading) {
+    return (
+      <div className="bg-green-300 flex justify-center items-center h-32 text-lg font-semibold text-gray-600">
+        Loading profile...
+      </div>
+    );
+  }
 
+  if (!user) {
+    return (
+      <div className="bg-green-300 flex justify-center items-center h-32 text-lg font-semibold text-gray-600">
+        No user data available.
+      </div>
+    );
+  }
   return (
-    <div className="bg-white p-6 rounded shadow-md max-w-md">
+    <div className="bg-gradient-to-br from-yellow-300 via-orange-400 to-green-500 p-6 rounded shadow-md max-w-md mx-auto ">
       <h2 className="text-2xl font-bold mb-4">Admin Profile</h2>
       <div className="flex flex-col items-center gap-4">
         {user?.photoURL ? (
